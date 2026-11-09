@@ -122,7 +122,7 @@ export function Sheet({ title, onClose, children }) {
             <Icon d={I.close} size={20} />
           </button>
         </div>
-        <div className="flex flex-col gap-3 overflow-y-auto px-4 pb-6 pt-1">{children}</div>
+        <div className="flex flex-col gap-3 overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-1">{children}</div>
       </div>
     </div>
   );

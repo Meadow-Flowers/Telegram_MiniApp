@@ -122,7 +122,7 @@ export function CatalogScreen({ app }) {
 export function CatalogFooter({ app }) {
   const { format, setScreen, settings, total } = app;
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t border-neutral-200 bg-white px-4 pb-5 pt-3">
+    <div className="flex shrink-0 items-center gap-3 border-t border-neutral-200 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
       <div className="flex-1">
         <div className="text-xs text-neutral-600">Обрано</div>
         <div className="text-base font-semibold tabular-nums">

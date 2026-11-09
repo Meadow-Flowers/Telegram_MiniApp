@@ -218,8 +218,8 @@ export default function Prototype() {
   /* ================================================================ */
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-0 sm:p-6">
-      <div className="relative flex h-screen w-full flex-col overflow-hidden bg-white sm:h-[844px] sm:w-[390px] sm:rounded-[28px] sm:shadow-xl">
+    <main className="flex min-h-dvh items-center justify-center p-0 sm:p-6">
+      <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-white pt-[env(safe-area-inset-top)] sm:h-[844px] sm:w-[390px] sm:rounded-[28px] sm:shadow-xl">
         {/* Перемикач ролі — лише для прототипу */}
         <div className="flex shrink-0 items-center gap-2 border-b border-dashed border-neutral-400 bg-neutral-100 px-3 py-2">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-600">Прототип · роль</span>

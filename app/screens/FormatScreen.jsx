@@ -97,7 +97,7 @@ export function FormatScreen({ app }) {
 export function FormatFooter({ app }) {
   const { activeFormat, generate, gensLeft, isStaff, settings } = app;
   return (
-    <div className="flex shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-4 pb-5 pt-3">
+    <div className="flex shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
       <span className="text-center text-xs text-neutral-600">
         {isStaff
           ? "Генерації без ліміту (працівник студії)"

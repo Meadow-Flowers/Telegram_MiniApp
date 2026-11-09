@@ -8,7 +8,7 @@ export function ShareDialog({ app }) {
       <div
         role="dialog"
         aria-label="Поділитися"
-        className="flex flex-col gap-1 rounded-t-3xl bg-white p-4 pb-6"
+        className="flex flex-col gap-1 rounded-t-3xl bg-white p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-2 flex items-center justify-between">
