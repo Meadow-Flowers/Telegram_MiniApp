@@ -65,6 +65,8 @@ app/
 - **Вхід:** `Authorization: tma <initData>` від Telegram, підпис перевіряється в `app/lib/server/telegramAuth.js`.
 - **Маршрути:** `app/api/bootstrap` (старт), `app/api/admin/*` (зміни, лише працівник), `app/api/admin/team` (лише власник), `app/api/health` (перевірка налаштувань).
 - **Змінні середовища:** див. `.env.example`. На Vercel додаються в Settings → Environment Variables.
-- **База:** виконати `supabase/migrations/0001_init.sql` у Supabase (SQL Editor) один раз. Власник додається вручну:
+- **База:** виконати по черзі `supabase/migrations/0001_init.sql` і `0003_generations.sql` у Supabase (SQL Editor), по одному разу (`0002` це необов'язкові демо-дані). Власник додається вручну:
   `insert into public.app_users (telegram_id, first_name, role) values (<ВАШ_TELEGRAM_ID>, 'Власник', 'owner');`
 - **Локально без Telegram:** у `.env.local` задати `NEXT_PUBLIC_DEV_TELEGRAM_ID`; вгорі з'явиться перемикач ролі (лише в режимі розробки).
+- **Чат студії:** `STUDIO_CHAT_ID` (номер групи, куди бот надсилає варіанти). Бота потрібно додати в цей чат.
+- **Модель зображень:** поки заглушка, див. `app/lib/server/imageGen.js`.

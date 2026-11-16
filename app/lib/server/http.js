@@ -10,7 +10,7 @@ export function api(handler, { role, touch = false } = {}) {
       const params = context?.params ? await context.params : {};
       return Response.json((await handler({ request, params, session })) ?? { ok: true });
     } catch (e) {
-      if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status });
+      if (e instanceof HttpError) return Response.json({ error: e.message, code: e.code }, { status: e.status });
       console.error(e);
       return Response.json({ error: "Внутрішня помилка сервера" }, { status: 500 });
     }

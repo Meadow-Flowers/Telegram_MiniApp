@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { VARIANT_SHADES } from "../lib/data";
-import { IS_DEV, devOwnerAvailable, getDevRole, setDevRole } from "../lib/api";
+import { IS_DEV, apiFetch, devOwnerAvailable, getDevRole, setDevRole } from "../lib/api";
 import { getFormatChoice, sizeFor } from "../lib/utils";
 import { useStudioData } from "../hooks/useStudioData";
 import { useAdminUi } from "../hooks/useAdminUi";
 import { Icon, I } from "./ui";
-import { ShareDialog } from "./ShareDialog";
 import { AdminSheets } from "./AdminSheets";
 import { CatalogScreen, CatalogFooter } from "../screens/CatalogScreen";
 import { FormatScreen, FormatFooter } from "../screens/FormatScreen";
@@ -46,11 +44,8 @@ export default function Prototype() {
   const [active, setActive] = useState(0);
   const [nextVariantNo, setNextVariantNo] = useState(1);
 
-  const [clientGens, setClientGens] = useState(0);
-  const [stats, setStats] = useState({ gens: 0, sent: 0, limitHits: 0, shared: 0 });
-
   const [toast, setToast] = useState("");
-  const [shareOpen, setShareOpen] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false); // іде надсилання студії або підготовка «Поділитися»
 
   const toastTimer = useRef(null);
   const genTimer = useRef(null);
@@ -117,8 +112,7 @@ export default function Prototype() {
     setFmtPick((p) => ({ ...p, [activeFormat.id]: { ...p[activeFormat.id], [groupKey]: id } }));
 
   const sessionVariants = variantsSig === sig ? variants : [];
-  const gensLeft = Math.max(0, settings.gensPerDay - clientGens);
-  const canGenerate = isStaff || gensLeft > 0;
+  const gensLeft = data.quota.unlimited ? Infinity : Math.max(0, settings.gensPerDay - data.quota.used);
 
   // у фільтрах — лише категорії, де зараз є що показати
   const chipCats = categories.filter((c) => available.some((f) => f.cat === c.id));
@@ -139,27 +133,98 @@ export default function Prototype() {
 
   /* ---------- дії ---------- */
 
-  const generate = () => {
-    if (!canGenerate) {
-      setStats((s) => ({ ...s, limitHits: s.limitHits + 1 }));
-      setScreen("limit");
-      return;
-    }
+  // Один натиск = один варіант. Усе робить сервер: перевіряє вибір і ліміт, малює картинку, вписує склад.
+  const generate = async () => {
+    // навіть якщо ліміт уже вичерпано, звертаємось до сервера: він сам відмовить і запише це в статистику
     setScreen("loading");
-    clearTimeout(genTimer.current);
-    genTimer.current = setTimeout(() => {
-      const isNewSet = variantsSig !== sig;
-      const no = isNewSet ? 1 : nextVariantNo;
-      const v = { id: `${Date.now()}`, no, shade: VARIANT_SHADES[(no - 1) % VARIANT_SHADES.length] };
+    const isNewSet = variantsSig !== sig;
+    const no = isNewSet ? 1 : nextVariantNo;
+    try {
+      const { generation, quota } = await apiFetch("/api/generate", {
+        method: "POST",
+        json: {
+          flowers: Object.entries(selection).map(([id, count]) => ({ id, count })),
+          formatId: activeFormat.id,
+          picks: fmtPick[activeFormat.id] || {},
+          variantNo: no,
+        },
+      });
+      const v = { id: generation.id, no, imageUrl: generation.imageUrl };
       const list = isNewSet ? [v] : [...variants, v];
       setVariants(list);
       setVariantsSig(sig);
       setNextVariantNo(no + 1);
       setActive(list.length - 1);
-      if (!isStaff) setClientGens((g) => g + 1);
-      setStats((s) => ({ ...s, gens: s.gens + 1 }));
+      data.setQuota(quota);
       setScreen("result");
-    }, 1400);
+    } catch (e) {
+      if (e.code === "limit") {
+        data.setQuota((q) => ({ ...q, used: Math.max(q.used, settings.gensPerDay) }));
+        setScreen("limit");
+        return;
+      }
+      showToast(e.message);
+      setScreen("format");
+      if (e.code === "stale") data.reload({ silent: true }); // каталог змінився: підтягуємо актуальний
+    }
+  };
+
+  // «Надіслати студії»: бот пише в робочий чат студії
+  const sendToStudio = async () => {
+    if (!activeVariant || actionBusy) return;
+    setActionBusy(true);
+    try {
+      const r = await apiFetch(`/api/generations/${activeVariant.id}/send`, { method: "POST" });
+      showToast(r.alreadySent ? `Варіант ${activeVariant.no} уже надіслано студії` : `Варіант ${activeVariant.no} надіслано студії`);
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const track = (type) => apiFetch(`/api/generations/${activeVariant.id}/track`, { method: "POST", json: { type } }).catch(() => {});
+
+  // «Поділитися»: стандартне вікно вибору чату в Telegram
+  const shareVariant = async () => {
+    if (!activeVariant || actionBusy) return;
+    const tg = window.Telegram?.WebApp;
+    if (!tg) {
+      showToast("Поділитися можна лише всередині Telegram");
+      return;
+    }
+    setActionBusy(true);
+    try {
+      if (typeof tg.shareMessage === "function") {
+        const { messageId } = await apiFetch(`/api/generations/${activeVariant.id}/share`, { method: "POST" });
+        tg.shareMessage(messageId, (ok) => ok && track("shared"));
+      } else {
+        // старіші версії Telegram: звичайне посилання для пересилання
+        const link = `https://t.me/share/url?url=${encodeURIComponent(activeVariant.imageUrl)}`;
+        tg.openTelegramLink(link);
+        track("shared");
+      }
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  // «Зберегти фото»: у Telegram відкривається системне збереження файлу
+  const savePhoto = () => {
+    if (!activeVariant) return;
+    const tg = window.Telegram?.WebApp;
+    const url = activeVariant.imageUrl;
+    if (tg && typeof tg.downloadFile === "function") {
+      tg.downloadFile({ url, file_name: `buket-${activeVariant.no}.jpg` }, (ok) => ok && track("saved"));
+    } else if (tg) {
+      tg.openLink(url);
+      track("saved");
+    } else {
+      window.open(url, "_blank");
+      track("saved");
+    }
   };
 
   const activeVariant = sessionVariants[active] || sessionVariants[sessionVariants.length - 1];
@@ -169,7 +234,6 @@ export default function Prototype() {
     setDevRole(r);
     setDevRoleState(r);
     if (r === "client" && screen === "admin") setScreen("catalog");
-    setShareOpen(false);
     data.reload();
   };
 
@@ -195,10 +259,11 @@ export default function Prototype() {
     setCatFilter,
     active,
     setActive,
-    setClientGens,
-    stats,
-    setStats,
-    setShareOpen,
+    quota: data.quota,
+    actionBusy,
+    sendToStudio,
+    shareVariant,
+    savePhoto,
     showToast,
     available,
     maxFor,
@@ -293,9 +358,6 @@ export default function Prototype() {
         {ready && screen === "catalog" && <CatalogFooter app={app} />}
         {ready && screen === "format" && <FormatFooter app={app} />}
         {ready && screen === "result" && activeVariant && <ResultFooter app={app} />}
-
-        {/* Вікно «Поділитися» (імітація Telegram) */}
-        {shareOpen && activeVariant && <ShareDialog app={app} />}
 
         {/* Шторки адмінки */}
         {ready && screen === "admin" && <AdminSheets app={app} />}

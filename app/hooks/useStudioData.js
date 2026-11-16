@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../lib/api";
 
-const DEFAULT_SETTINGS = { maxPerType: 15, maxTotal: 35, gensPerDay: 10 };
+const DEFAULT_SETTINGS = { maxPerType: 15, maxTotal: 35, gensPerDay: 10, generationCost: null };
+const DEFAULT_QUOTA = { used: 0, perDay: 10, unlimited: false };
 
 // Шар даних студії: каталог, категорії, формати, референси стилю, налаштування.
 // Дані живуть у базі (Supabase) і приходять через наш сервер (папка app/api).
@@ -19,6 +20,7 @@ export function useStudioData({ onError } = {}) {
   const [formats, setFormats] = useState([]);
   const [refs, setRefs] = useState({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [quota, setQuota] = useState(DEFAULT_QUOTA); // скільки генерацій людина зробила сьогодні
 
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
@@ -39,6 +41,7 @@ export function useStudioData({ onError } = {}) {
       setFormats(d.formats);
       setRefs(d.refs);
       setSettings(d.settings);
+      setQuota(d.quota);
       setError(null);
       setStatus("ready");
     } catch (e) {
@@ -256,6 +259,8 @@ export function useStudioData({ onError } = {}) {
     formats,
     refs,
     settings,
+    quota,
+    setQuota,
     updateFlower,
     addFlower,
     setFlowerPhoto,

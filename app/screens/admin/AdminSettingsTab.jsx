@@ -1,7 +1,7 @@
-import { Stepper, secondaryBtn } from "../../components/ui";
+import { Stepper } from "../../components/ui";
 
 export function AdminSettingsTab({ app }) {
-  const { setClientGens, settings, showToast, updateSettings } = app;
+  const { settings, updateSettings } = app;
   return (
     <div className="flex flex-col gap-3 p-4">
       {[
@@ -26,16 +26,23 @@ export function AdminSettingsTab({ app }) {
         вище. Працівники студії генерують без ліміту. Місячний бюджет у грошах налаштовується в кабінеті
         сервісу моделі.
       </p>
-      <button
-        type="button"
-        className={secondaryBtn}
-        onClick={() => {
-          setClientGens(0);
-          showToast("Лічильник генерацій клієнта скинуто");
-        }}
-      >
-        Скинути денний лічильник (для тесту)
-      </button>
+      <label className="flex items-center gap-3 rounded-2xl border border-neutral-200 p-3.5">
+        <span className="flex-1 text-[15px] leading-snug">Ціна однієї генерації (для статистики витрат)</span>
+        <input
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="0.001"
+          defaultValue={settings.generationCost ?? ""}
+          placeholder="—"
+          aria-label="Ціна однієї генерації"
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            updateSettings({ generationCost: v === "" ? null : Number(v) });
+          }}
+          className="h-11 w-24 rounded-xl border border-neutral-300 px-3 text-right text-[15px] outline-none focus:border-neutral-900"
+        />
+      </label>
     </div>
   );
 }

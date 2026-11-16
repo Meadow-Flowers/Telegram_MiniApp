@@ -17,13 +17,12 @@ export function ResultScreen({ app }) {
   return (
     <div className="flex flex-col gap-3.5 p-4">
       <div className="relative">
-        <div
-          className={`flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-400 text-neutral-600 ${activeVariant.shade}`}
-        >
-          <Icon d={I.image} size={48} />
-          <span className="text-[15px] font-semibold text-neutral-700">AI-візуалізація букета</span>
-          <span className="text-[13px]">Варіант {activeVariant.no}</span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={activeVariant.imageUrl}
+          alt={`Варіант ${activeVariant.no}`}
+          className="w-full rounded-2xl bg-neutral-200"
+        />
         {sessionVariants.length > 1 && (
           <>
             <button
@@ -64,11 +63,15 @@ export function ResultScreen({ app }) {
               aria-label={`Варіант ${v.no}`}
               aria-pressed={i === active}
               onClick={() => setActive(i)}
-              className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-neutral-700 ${v.shade} ${
+              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-200 ${
                 i === active ? "ring-2 ring-neutral-900 ring-offset-2" : ""
               }`}
             >
-              №{v.no}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={v.imageUrl} alt="" className="h-full w-full object-cover object-top" />
+              <span className="absolute bottom-0.5 left-0.5 rounded bg-white/85 px-1 text-[10px] font-semibold text-neutral-800">
+                №{v.no}
+              </span>
             </button>
           ))}
         </div>
@@ -102,28 +105,17 @@ export function ResultScreen({ app }) {
 }
 
 export function ResultFooter({ app }) {
-  const { activeVariant, setShareOpen, setStats, showToast } = app;
+  const { actionBusy, savePhoto, sendToStudio, shareVariant } = app;
   return (
     <div className="flex shrink-0 flex-col gap-2 border-t border-neutral-200 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
-      <button
-        type="button"
-        className={primaryBtn}
-        onClick={() => {
-          setStats((s) => ({ ...s, sent: s.sent + 1 }));
-          showToast(`Варіант ${activeVariant.no} надіслано студії: фото + склад`);
-        }}
-      >
+      <button type="button" className={primaryBtn} disabled={actionBusy} onClick={sendToStudio}>
         Надіслати студії
       </button>
       <div className="grid grid-cols-2 gap-2">
-        <button type="button" className={secondaryBtn} onClick={() => setShareOpen(true)}>
+        <button type="button" className={secondaryBtn} disabled={actionBusy} onClick={shareVariant}>
           Поділитися
         </button>
-        <button
-          type="button"
-          className={secondaryBtn}
-          onClick={() => showToast(`Варіант ${activeVariant.no} збережено в галерею (зі складом на фото)`)}
-        >
+        <button type="button" className={secondaryBtn} onClick={savePhoto}>
           Зберегти фото
         </button>
       </div>

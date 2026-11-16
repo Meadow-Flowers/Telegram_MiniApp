@@ -23,9 +23,10 @@ function authHeader() {
 }
 
 export class ApiError extends Error {
-  constructor(status, message) {
+  constructor(status, message, code) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -50,6 +51,6 @@ export async function apiFetch(path, { method = "GET", json, form } = {}) {
     throw new ApiError(0, "Немає зв'язку з сервером. Перевірте інтернет.");
   }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(res.status, data.error || "Щось пішло не так");
+  if (!res.ok) throw new ApiError(res.status, data.error || "Щось пішло не так", data.code);
   return data;
 }

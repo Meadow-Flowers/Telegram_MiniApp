@@ -27,7 +27,7 @@ export async function loadCatalog() {
       .order("sort")
       .order("created_at"),
     sb.from("style_refs").select("id, format_id, photo_path, sort, created_at").order("sort").order("created_at"),
-    sb.from("settings").select("max_per_type, max_total, gens_per_day").eq("id", 1).single(),
+    sb.from("settings").select("max_per_type, max_total, gens_per_day, generation_cost").eq("id", 1).single(),
   ]);
 
   const categoriesData = check(cats);
@@ -72,6 +72,7 @@ export async function loadCatalog() {
       maxPerType: settingsData.max_per_type,
       maxTotal: settingsData.max_total,
       gensPerDay: settingsData.gens_per_day,
+      generationCost: settingsData.generation_cost == null ? null : Number(settingsData.generation_cost),
     },
   };
 }
