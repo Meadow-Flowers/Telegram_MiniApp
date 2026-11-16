@@ -63,6 +63,15 @@ export function PhotoPlaceholder({ className = "", label, iconSize = 32 }) {
   );
 }
 
+// Фото з бази або, якщо його ще немає, заглушка
+export function Photo({ url, className = "", label, iconSize = 32 }) {
+  if (url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={url} alt="" loading="lazy" className={`bg-neutral-200 object-cover ${className}`} />;
+  }
+  return <PhotoPlaceholder className={className} label={label} iconSize={iconSize} />;
+}
+
 export function Stepper({ value, onDec, onInc, decDisabled, incDisabled, dark = false, label }) {
   const btn =
     "flex h-11 w-11 items-center justify-center text-xl disabled:cursor-not-allowed disabled:opacity-30";
@@ -129,7 +138,7 @@ export function Sheet({ title, onClose, children }) {
 }
 
 // Картка вибору з фото-заглушкою: формат, форма, колір
-export function ChoiceCard({ label, selected, onClick, aspect = "aspect-square" }) {
+export function ChoiceCard({ label, selected, onClick, photo, aspect = "aspect-square" }) {
   return (
     <button
       type="button"
@@ -140,7 +149,7 @@ export function ChoiceCard({ label, selected, onClick, aspect = "aspect-square" 
       }`}
     >
       <div className="relative">
-        <PhotoPlaceholder className={`${aspect} w-full rounded-xl`} iconSize={22} />
+        <Photo url={photo} className={`${aspect} w-full rounded-xl`} iconSize={22} />
         {selected && (
           <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 text-white">
             <Icon d={I.check} size={14} />

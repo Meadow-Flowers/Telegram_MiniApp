@@ -59,3 +59,12 @@ app/
 - Налаштування й ключі: див. `.env.example`. Реальні ключі в репозиторій не додаємо: у проді вони лежать
   у налаштуваннях Vercel (Settings → Environment Variables).
 - План розвитку, рішення й відкриті питання — у `CLAUDE.md`.
+
+## Сервер і база
+
+- **Вхід:** `Authorization: tma <initData>` від Telegram, підпис перевіряється в `app/lib/server/telegramAuth.js`.
+- **Маршрути:** `app/api/bootstrap` (старт), `app/api/admin/*` (зміни, лише працівник), `app/api/admin/team` (лише власник), `app/api/health` (перевірка налаштувань).
+- **Змінні середовища:** див. `.env.example`. На Vercel додаються в Settings → Environment Variables.
+- **База:** виконати `supabase/migrations/0001_init.sql` у Supabase (SQL Editor) один раз. Власник додається вручну:
+  `insert into public.app_users (telegram_id, first_name, role) values (<ВАШ_TELEGRAM_ID>, 'Власник', 'owner');`
+- **Локально без Telegram:** у `.env.local` задати `NEXT_PUBLIC_DEV_TELEGRAM_ID`; вгорі з'явиться перемикач ролі (лише в режимі розробки).

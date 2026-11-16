@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VARIANT_SHADES } from "../lib/data";
+import { IS_DEV, devOwnerAvailable, getDevRole, setDevRole } from "../lib/api";
 import { getFormatChoice, sizeFor } from "../lib/utils";
 import { useStudioData } from "../hooks/useStudioData";
 import { useAdminUi } from "../hooks/useAdminUi";
@@ -13,6 +14,7 @@ import { FormatScreen, FormatFooter } from "../screens/FormatScreen";
 import { LoadingScreen } from "../screens/LoadingScreen";
 import { ResultScreen, ResultFooter } from "../screens/ResultScreen";
 import { LimitScreen } from "../screens/LimitScreen";
+import { StatusScreen } from "../screens/StatusScreen";
 import { AdminScreen } from "../screens/admin/AdminScreen";
 import { AdminFooter } from "../screens/admin/AdminFooter";
 
@@ -28,9 +30,8 @@ const TITLES = {
 // Каркас прототипу: тримає стан клієнтського флоу (вибір квітів, формат, варіанти, ліміт),
 // збирає всі значення в `app` і роздає їх екранам. Самі екрани лежать у папці screens.
 export default function Prototype() {
-  // роль у прототипі (у реальному додатку визначається за Telegram ID)
-  const [role, setRole] = useState("client");
-  const isStaff = role === "staff";
+  // перемикач ролі лише для локальної розробки (у Telegram роль визначає сервер за Telegram ID)
+  const [devRole, setDevRoleState] = useState(getDevRole());
 
   const [screen, setScreen] = useState("catalog"); // catalog | format | loading | result | limit | admin
   const [counts, setCounts] = useState({});
@@ -70,9 +71,11 @@ export default function Prototype() {
   };
 
   // дані студії й стан адмінки
-  const data = useStudioData();
+  const data = useStudioData({ onError: showToast });
   const admin = useAdminUi({ data, showToast });
   const { flowers, categories, formats, settings } = data;
+  const ready = data.status === "ready";
+  const isStaff = Boolean(data.me?.isStaff);
 
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
@@ -96,7 +99,9 @@ export default function Prototype() {
   }, [available, counts, settings.maxPerType]);
 
   const total = Object.values(selection).reduce((a, b) => a + b, 0);
-  const summary = available.filter((f) => selection[f.id]).map((f) => ({ name: f.name, count: selection[f.id] }));
+  const summary = available
+    .filter((f) => selection[f.id])
+    .map((f) => ({ id: f.id, name: f.name, count: selection[f.id], photo: f.photo }));
   const summaryText = summary.map((r) => `${r.name} ×${r.count}`).join(", ");
   const size = sizeFor(total);
 
@@ -159,10 +164,13 @@ export default function Prototype() {
 
   const activeVariant = sessionVariants[active] || sessionVariants[sessionVariants.length - 1];
 
+  // лише для розробки: входимо як тестовий клієнт або як власник і перезавантажуємо дані
   const switchRole = (r) => {
-    setRole(r);
+    setDevRole(r);
+    setDevRoleState(r);
     if (r === "client" && screen === "admin") setScreen("catalog");
     setShareOpen(false);
+    data.reload();
   };
 
   const goBack = () => {
@@ -220,9 +228,10 @@ export default function Prototype() {
   return (
     <main className="flex min-h-dvh items-center justify-center p-0 sm:p-6">
       <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-white pt-[env(safe-area-inset-top)] sm:h-[844px] sm:w-[390px] sm:rounded-[28px] sm:shadow-xl">
-        {/* Перемикач ролі — лише для прототипу */}
+        {/* Перемикач ролі: лише для локальної розробки, у Telegram його немає */}
+        {IS_DEV && (
         <div className="flex shrink-0 items-center gap-2 border-b border-dashed border-neutral-400 bg-neutral-100 px-3 py-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-600">Прототип · роль</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-600">Розробка · роль</span>
           <div className="ml-auto flex gap-1">
             {[
               ["client", "Клієнт"],
@@ -232,9 +241,11 @@ export default function Prototype() {
                 key={key}
                 type="button"
                 onClick={() => switchRole(key)}
-                aria-pressed={role === key}
+                disabled={key === "staff" && !devOwnerAvailable}
+                title={key === "staff" && !devOwnerAvailable ? "Додайте NEXT_PUBLIC_DEV_TELEGRAM_ID у .env.local" : undefined}
+                aria-pressed={devRole === key}
                 className={`h-8 rounded-lg border px-2.5 text-xs font-semibold ${
-                  role === key ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white"
+                  devRole === key ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white"
                 }`}
               >
                 {label}
@@ -242,6 +253,7 @@ export default function Prototype() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Шапка */}
         <header className="flex h-14 shrink-0 items-center gap-1 border-b border-neutral-200 pl-1 pr-3">
@@ -253,7 +265,7 @@ export default function Prototype() {
             <span className="w-3" />
           )}
           <h1 className="flex-1 truncate text-[17px] font-semibold">{TITLES[screen]}</h1>
-          {isStaff && screen !== "admin" && screen !== "loading" && (
+          {ready && isStaff && screen !== "admin" && screen !== "loading" && (
             <button
               type="button"
               onClick={() => setScreen("admin")}
@@ -267,25 +279,26 @@ export default function Prototype() {
 
         {/* Контент */}
         <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
-          {screen === "catalog" && <CatalogScreen app={app} />}
-          {screen === "format" && <FormatScreen app={app} />}
-          {screen === "loading" && <LoadingScreen app={app} />}
-          {screen === "result" && activeVariant && <ResultScreen app={app} />}
-          {screen === "limit" && <LimitScreen app={app} />}
-          {screen === "admin" && <AdminScreen app={app} />}
+          {!ready && <StatusScreen status={data.status} error={data.error} onRetry={() => data.reload()} />}
+          {ready && screen === "catalog" && <CatalogScreen app={app} />}
+          {ready && screen === "format" && <FormatScreen app={app} />}
+          {ready && screen === "loading" && <LoadingScreen app={app} />}
+          {ready && screen === "result" && activeVariant && <ResultScreen app={app} />}
+          {ready && screen === "limit" && <LimitScreen app={app} />}
+          {ready && screen === "admin" && <AdminScreen app={app} />}
         </div>
 
         {/* Нижні панелі */}
-        {screen === "admin" && admin.adminTab === "catalog" && <AdminFooter app={app} />}
-        {screen === "catalog" && <CatalogFooter app={app} />}
-        {screen === "format" && <FormatFooter app={app} />}
-        {screen === "result" && activeVariant && <ResultFooter app={app} />}
+        {ready && screen === "admin" && admin.adminTab === "catalog" && <AdminFooter app={app} />}
+        {ready && screen === "catalog" && <CatalogFooter app={app} />}
+        {ready && screen === "format" && <FormatFooter app={app} />}
+        {ready && screen === "result" && activeVariant && <ResultFooter app={app} />}
 
         {/* Вікно «Поділитися» (імітація Telegram) */}
         {shareOpen && activeVariant && <ShareDialog app={app} />}
 
         {/* Шторки адмінки */}
-        {screen === "admin" && <AdminSheets app={app} />}
+        {ready && screen === "admin" && <AdminSheets app={app} />}
 
         {/* Тост */}
         {toast && (

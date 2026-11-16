@@ -1,7 +1,7 @@
 import { Stepper, secondaryBtn } from "../../components/ui";
 
 export function AdminSettingsTab({ app }) {
-  const { setClientGens, setSettings, settings, showToast } = app;
+  const { setClientGens, settings, showToast, updateSettings } = app;
   return (
     <div className="flex flex-col gap-3 p-4">
       {[
@@ -14,8 +14,8 @@ export function AdminSettingsTab({ app }) {
           <Stepper
             label={label}
             value={settings[key]}
-            onDec={() => setSettings((s) => ({ ...s, [key]: Math.max(min, s[key] - 1) }))}
-            onInc={() => setSettings((s) => ({ ...s, [key]: Math.min(max, s[key] + 1) }))}
+            onDec={() => updateSettings({ [key]: Math.max(min, settings[key] - 1) })}
+            onInc={() => updateSettings({ [key]: Math.min(max, settings[key] + 1) })}
             decDisabled={settings[key] <= min}
             incDisabled={settings[key] >= max}
           />

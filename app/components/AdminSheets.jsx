@@ -1,5 +1,6 @@
-import { Icon, I, Stepper, Sheet, primaryBtn } from "./ui";
+import { Stepper, Sheet, primaryBtn } from "./ui";
 import CategoryPicker from "./CategoryPicker";
+import PhotoPicker from "./PhotoPicker";
 
 export function AdminSheets({ app }) {
   const {
@@ -13,6 +14,7 @@ export function AdminSheets({ app }) {
     saveDraft,
     saveEdit,
     saveOption,
+    saving,
     setDraft,
     setEditFlower,
     setOptDraft,
@@ -21,16 +23,12 @@ export function AdminSheets({ app }) {
     <>
     {addOpen && (
       <Sheet title="Нова квітка" onClose={closeFlowerSheets}>
-        <button
-          type="button"
-          onClick={() => setDraft((d) => ({ ...d, photo: true }))}
-          className={`flex h-28 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-sm ${
-            draft.photo ? "bg-neutral-200 text-neutral-700" : "border border-dashed border-neutral-500"
-          }`}
-        >
-          <Icon d={I.image} size={26} />
-          {draft.photo ? "Фото завантажено (натисніть, щоб замінити)" : "Завантажити фото квітки"}
-        </button>
+        <PhotoPicker
+          value={draft.photo}
+          onChange={(blob) => setDraft((d) => ({ ...d, photo: blob }))}
+          onBusy={(busy) => setDraft((d) => ({ ...d, photoBusy: busy }))}
+          label="Завантажити фото квітки"
+        />
         <label className="flex flex-col gap-1.5">
           <span className="text-[13px] text-neutral-600">Назва</span>
           <input
@@ -51,8 +49,8 @@ export function AdminSheets({ app }) {
             decDisabled={draft.stock <= 0}
           />
         </div>
-        <button type="button" className={primaryBtn} disabled={!draft.name.trim()} onClick={saveDraft}>
-          Додати в каталог
+        <button type="button" className={primaryBtn} disabled={!draft.name.trim() || saving || draft.photoBusy} onClick={saveDraft}>
+          {saving ? "Зберігаємо…" : "Додати в каталог"}
         </button>
       </Sheet>
     )}
@@ -68,16 +66,11 @@ export function AdminSheets({ app }) {
 
     {optDraft && (
       <Sheet title={optDraft.title} onClose={() => setOptDraft(null)}>
-        <button
-          type="button"
-          onClick={() => setOptDraft((d) => ({ ...d, photo: true }))}
-          className={`flex h-28 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-sm ${
-            optDraft.photo ? "bg-neutral-200 text-neutral-700" : "border border-dashed border-neutral-500"
-          }`}
-        >
-          <Icon d={I.image} size={26} />
-          {optDraft.photo ? "Фото завантажено (натисніть, щоб замінити)" : "Завантажити фото"}
-        </button>
+        <PhotoPicker
+          value={optDraft.photo}
+          onChange={(blob) => setOptDraft((d) => ({ ...d, photo: blob }))}
+          onBusy={(busy) => setOptDraft((d) => ({ ...d, photoBusy: busy }))}
+        />
         <label className="flex flex-col gap-1.5">
           <span className="text-[13px] text-neutral-600">Назва</span>
           <input
@@ -88,8 +81,8 @@ export function AdminSheets({ app }) {
             className="h-11 rounded-xl border border-neutral-300 px-3 text-[15px] outline-none focus:border-neutral-900"
           />
         </label>
-        <button type="button" className={primaryBtn} disabled={!optDraft.name.trim()} onClick={saveOption}>
-          Додати
+        <button type="button" className={primaryBtn} disabled={!optDraft.name.trim() || saving || optDraft.photoBusy} onClick={saveOption}>
+          {saving ? "Зберігаємо…" : "Додати"}
         </button>
       </Sheet>
     )}

@@ -1,7 +1,15 @@
-import { Icon, I, PhotoPlaceholder, Stepper, Toggle } from "../../components/ui";
+import { Icon, I, Stepper, Toggle } from "../../components/ui";
+import UploadThumb from "../../components/UploadThumb";
 
 export function AdminCatalogTab({ app }) {
-  const { categories, flowers, openEdit, updateFlower } = app;
+  const {
+    categories,
+    flowers,
+    openEdit,
+    setFlowerPhoto,
+    showToast,
+    updateFlower,
+  } = app;
   return (
     <div className="flex flex-col gap-3 p-4">
       <p className="text-[13px] leading-relaxed text-neutral-600">
@@ -15,7 +23,7 @@ export function AdminCatalogTab({ app }) {
           return (
             <li key={f.id} className="flex flex-col gap-2 px-3 py-2.5">
               <div className="flex items-center gap-3">
-                <PhotoPlaceholder className="h-12 w-12 shrink-0 rounded-lg" iconSize={18} />
+                <UploadThumb url={f.photo} label={`Змінити фото: ${f.name}`} onPick={(blob) => setFlowerPhoto(f.id, blob)} onError={showToast} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[15px] font-semibold">{f.name}</div>
                   <div className="text-xs text-neutral-600">

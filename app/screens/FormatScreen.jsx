@@ -1,4 +1,4 @@
-import { Icon, I, PhotoPlaceholder, ChoiceCard, linkBtn, primaryBtn } from "../components/ui";
+import { Icon, I, Photo, ChoiceCard, linkBtn, primaryBtn } from "../components/ui";
 
 export function FormatScreen({ app }) {
   const {
@@ -43,6 +43,7 @@ export function FormatScreen({ app }) {
                   <ChoiceCard
                     key={it.id}
                     label={it.name}
+                    photo={it.photo}
                     selected={g.picked.id === it.id}
                     onClick={() => pickOption(g.key, it.id)}
                   />
@@ -66,8 +67,8 @@ export function FormatScreen({ app }) {
         </div>
         <ul className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200">
           {summary.map((r) => (
-            <li key={r.name} className="flex items-center gap-3 px-3 py-2.5 text-[15px]">
-              <PhotoPlaceholder className="h-11 w-11 shrink-0 rounded-lg" iconSize={16} />
+            <li key={r.id} className="flex items-center gap-3 px-3 py-2.5 text-[15px]">
+              <Photo url={r.photo} className="h-11 w-11 shrink-0 rounded-lg" iconSize={16} />
               <span className="min-w-0 flex-1">{r.name}</span>
               <span className="font-semibold tabular-nums">×{r.count}</span>
             </li>
