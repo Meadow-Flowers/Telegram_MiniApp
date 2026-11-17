@@ -1,6 +1,7 @@
 import Script from "next/script";
 import "./globals.css";
 import TelegramInit from "./components/TelegramInit";
+import DevFeedback from "./components/DevFeedback";
 
 export const metadata = {
   title: "AI Букет — прототип",
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
         <TelegramInit />
         {children}
+        <DevFeedback />
       </body>
     </html>
   );
