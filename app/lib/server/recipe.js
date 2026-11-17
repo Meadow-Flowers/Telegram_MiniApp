@@ -49,3 +49,21 @@ export function buildRecipe(catalog, input) {
     summary,
   };
 }
+
+// Які фото передати моделі: обрані квіти, фото форми/паперу (не колір коробки: його задаємо текстом) і референси стилю формату.
+// Фото беремо з каталогу, тому в рецепт (що зберігається в базі) вони не потрапляють.
+export function recipeImages(catalog, recipe) {
+  const flowers = recipe.flowers.map((f) => ({
+    name: f.name,
+    count: f.count,
+    url: catalog.flowers.find((x) => x.id === f.id)?.photo || null,
+  }));
+  const format = catalog.formats.find((f) => f.id === recipe.format.id);
+  const allOptions = format ? format.groups.flatMap((g) => g.items.flatMap((i) => [i, ...(i.children || [])])) : [];
+  const container = recipe.options
+    .filter((o) => !o.group.endsWith("Child"))
+    .map((o) => ({ group: o.group, label: o.name, url: allOptions.find((x) => x.id === o.id)?.photo || null }))
+    .filter((c) => c.url);
+  const styles = (catalog.refs?.[recipe.format.id] || []).map((r) => r.url).filter(Boolean);
+  return { flowers, container, styles };
+}

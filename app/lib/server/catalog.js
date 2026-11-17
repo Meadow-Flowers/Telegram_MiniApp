@@ -76,3 +76,14 @@ export async function loadCatalog() {
     },
   };
 }
+
+// Шаблон промпту для моделі зображень. Лежить у базі (settings.image_prompt), а не в коді: репозиторій публічний.
+// Не входить у loadCatalog, тож у браузер не потрапляє. Якщо міграцію 0004 ще не виконано, повертає null.
+export async function loadPromptTemplate() {
+  const { data, error } = await db().from("settings").select("image_prompt").eq("id", 1).single();
+  if (error) {
+    console.error("Промпт не прочитано (чи виконано міграцію 0004?):", error.message);
+    return null;
+  }
+  return data.image_prompt?.trim() || null;
+}
