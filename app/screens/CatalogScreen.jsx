@@ -1,4 +1,5 @@
 import { Icon, I, Photo, Stepper, secondaryBtn, primaryBtn } from "../components/ui";
+import ZoomPhoto from "../components/Lightbox";
 import { flowersWord } from "../lib/utils";
 
 export function CatalogScreen({ app }) {
@@ -86,7 +87,7 @@ export function CatalogScreen({ app }) {
                   c > 0 ? "border-2 border-neutral-900" : "m-px border border-neutral-200"
                 }`}
               >
-                <Photo url={f.photo} className="aspect-square w-full rounded-xl" />
+                <ZoomPhoto url={f.photo} label={`Відкрити фото: ${f.name}`} className="aspect-[4/5] w-full rounded-xl" />
                 <div className="px-0.5">
                   <div className="text-sm font-semibold">{f.name}</div>
                   <div className="text-xs text-neutral-600">{hint}</div>

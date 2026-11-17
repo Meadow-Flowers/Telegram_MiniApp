@@ -29,11 +29,23 @@ export default function CategoryPicker({ app, value, onSelect }) {
               setCatInput(null);
             }}
           >
-            {catManage ? "Готово" : "Видалити категорії"}
+            {catManage ? "Готово" : "Редагувати категорії"}
           </button>
         )}
       </div>
       <div className="flex flex-wrap gap-1.5">
+        {!catManage && (
+          <button
+            type="button"
+            aria-pressed={value == null}
+            onClick={() => onSelect(null)}
+            className={`h-9 rounded-full border px-3.5 text-[13px] font-semibold ${
+              value == null ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white"
+            }`}
+          >
+            Без категорії
+          </button>
+        )}
         {categories.map((c) =>
           catManage ? (
             <button
