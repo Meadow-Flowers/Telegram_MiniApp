@@ -9,7 +9,6 @@ export function AdminCatalogTab({ app }) {
     categories,
     closeFlowerSheets,
     flowers,
-    setCatManage,
     openEdit,
     setFlowerPhoto,
     showToast,
@@ -41,13 +40,10 @@ export function AdminCatalogTab({ app }) {
         <button
           type="button"
           aria-label="Редагувати категорії"
-          onClick={() => {
-            setCatSheet(true);
-            setCatManage(true);
-          }}
+          onClick={() => setCatSheet(true)}
           className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white"
         >
-          <Icon d={I.settings} size={16} />
+          <Icon d={I.edit} size={16} />
         </button>
       </div>
       {catSheet && (
@@ -58,7 +54,7 @@ export function AdminCatalogTab({ app }) {
             closeFlowerSheets();
           }}
         >
-          <CategoryPicker app={app} value={null} onSelect={() => {}} />
+          <CategoryPicker app={app} value={null} onSelect={() => {}} manageOnly />
         </Sheet>
       )}
       <p className="text-[13px] leading-relaxed text-neutral-600">

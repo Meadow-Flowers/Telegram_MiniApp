@@ -1,6 +1,7 @@
 import { Icon, I, secondaryBtn, linkBtn } from "./ui";
 
-export default function CategoryPicker({ app, value, onSelect }) {
+// manageOnly — окрема шторка «Категорії»: завжди режим видалення + додавання нової, без перемикача «Готово»
+export default function CategoryPicker({ app, value, onSelect, manageOnly = false }) {
   const {
     catDelete,
     catInput,
@@ -13,11 +14,12 @@ export default function CategoryPicker({ app, value, onSelect }) {
     setCatInput,
     setCatManage,
   } = app;
+  const manage = manageOnly || catManage;
   const delCat = categories.find((c) => c.id === catDelete);
   const delCount = flowers.filter((f) => f.cat === catDelete).length;
   return (
     <div className="flex flex-col gap-2" role="group" aria-label="Категорія">
-      <div className="flex items-center justify-between">
+      <div className={`items-center justify-between ${manageOnly ? "hidden" : "flex"}`}>
         <span className="text-[13px] text-neutral-600">Категорія</span>
         {categories.length > 0 && (
           <button
@@ -34,7 +36,7 @@ export default function CategoryPicker({ app, value, onSelect }) {
         )}
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {!catManage && (
+        {!manage && (
           <button
             type="button"
             aria-pressed={value == null}
@@ -47,7 +49,7 @@ export default function CategoryPicker({ app, value, onSelect }) {
           </button>
         )}
         {categories.map((c) =>
-          catManage ? (
+          manage ? (
             <button
               key={c.id}
               type="button"
@@ -74,7 +76,7 @@ export default function CategoryPicker({ app, value, onSelect }) {
             </button>
           ),
         )}
-        {!catManage && catInput === null && (
+        {(manageOnly || !catManage) && catInput === null && (
           <button
             type="button"
             onClick={() => setCatInput("")}
@@ -84,10 +86,10 @@ export default function CategoryPicker({ app, value, onSelect }) {
           </button>
         )}
       </div>
-      {catManage && !delCat && (
+      {manage && !delCat && categories.length > 0 && (
         <p className="text-xs text-neutral-600">Натисніть на категорію, яку хочете видалити.</p>
       )}
-      {catManage && delCat && (
+      {manage && delCat && (
         <div className="flex flex-col gap-2 rounded-xl bg-neutral-100 p-3">
           <p className="text-[13px] leading-snug">
             Видалити категорію «{delCat.name}»?
@@ -103,7 +105,7 @@ export default function CategoryPicker({ app, value, onSelect }) {
           </div>
         </div>
       )}
-      {!catManage && catInput !== null && (
+      {(manageOnly || !catManage) && catInput !== null && (
         <div className="flex gap-2">
           <input
             autoFocus
