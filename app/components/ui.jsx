@@ -43,6 +43,12 @@ export const I = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  camera: (
+    <>
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </>
+  ),
   chevronDown: <path d="M6 9l6 6 6-6" />,
   refresh: (
     <>

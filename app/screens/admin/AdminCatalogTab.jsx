@@ -1,4 +1,4 @@
-import { Icon, I, Stepper, Toggle } from "../../components/ui";
+import { Icon, I, Stepper, Toggle, secondaryBtn } from "../../components/ui";
 import ZoomPhoto from "../../components/Lightbox";
 import { useState } from "react";
 import { Sheet } from "../../components/ui";
@@ -17,6 +17,7 @@ export function AdminCatalogTab({ app }) {
   } = app;
   const [tab, setTab] = useState("all");
   const [catSheet, setCatSheet] = useState(false);
+  const [openId, setOpenId] = useState(null); // розгорнута картка квітки (одна за раз)
   const activeTab = tab === "all" || tab === "none" || categories.some((c) => c.id === tab) ? tab : "all";
   const shown = flowers.filter((f) => activeTab === "all" || (activeTab === "none" ? !f.cat : f.cat === activeTab));
   const tabs = [["all", "Усі"], ...categories.map((c) => [c.id, c.name]), ...(flowers.some((f) => !f.cat) ? [["none", "Без категорії"]] : [])];
@@ -65,45 +66,60 @@ export function AdminCatalogTab({ app }) {
 
       <ul className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200">
         {shown.map((f) => {
-          const visibleForClient = f.on && f.stock > 0;
+          const open = openId === f.id;
+          const cat = categories.find((c) => c.id === f.cat);
+          const soldOut = f.on && f.stock <= 0; // увімкнена, але 0 шт: клієнт її не бачить
+          const dim = f.on ? "" : "opacity-50"; // вимкнену картку притемнюємо замість напису
           return (
-            <li key={f.id} className="flex flex-col gap-2 px-3 py-2.5">
-              <div className="flex items-center gap-3">
-                <ZoomPhoto url={f.photo} className="h-16 w-16 rounded-lg" iconSize={18} onPick={(blob) => setFlowerPhoto(f.id, blob)} onRemove={() => removeFlowerPhoto(f.id)} onError={showToast} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[15px] font-semibold">{f.name}</div>
-                  <div className="text-xs text-neutral-600">
-                    {visibleForClient ? "Показується клієнтам" : f.on ? "Немає в наявності (0 шт)" : "Вимкнено"}
-                  </div>
-                </div>
+            <li key={f.id} className="flex flex-col">
+              <div className="flex items-center gap-3 px-3 py-2.5">
+                <ZoomPhoto url={f.photo} className={`h-14 w-14 rounded-lg ${dim}`} iconSize={18} onPick={(blob) => setFlowerPhoto(f.id, blob)} onRemove={() => removeFlowerPhoto(f.id)} onError={showToast} />
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenId(open ? null : f.id)}
+                  className={`min-w-0 flex-1 text-left ${dim}`}
+                >
+                  <span className="flex items-start gap-1">
+                    <span className="break-words text-[15px] font-semibold leading-tight">{f.name}</span>
+                    <Icon d={I.chevronDown} size={16} className={`mt-px shrink-0 text-neutral-500 transition-transform ${open ? "rotate-180" : ""}`} />
+                  </span>
+                  <span className="block text-xs">
+                    {activeTab === "all" && (
+                      <>
+                        {cat ? <span className="text-neutral-900">{cat.name}</span> : <span className="text-neutral-400">Без категорії</span>}
+                        <span className="text-neutral-400"> · </span>
+                      </>
+                    )}
+                    <span className={soldOut ? "text-red-700" : "text-neutral-600"}>
+                      {f.stock} шт{soldOut ? " · немає в наявності" : ""}
+                    </span>
+                  </span>
+                </button>
                 <Toggle
                   on={f.on}
                   label={`Показувати ${f.name}`}
                   onClick={() => updateFlower(f.id, { on: !f.on })}
                 />
               </div>
-              <div className="flex items-center justify-between pl-[60px]">
-                <span className="text-[13px] text-neutral-600">Категорія</span>
-                <button
-                  type="button"
-                  aria-label={`Змінити категорію: ${f.name}`}
-                  onClick={() => openEdit(f)}
-                  className="flex h-11 items-center gap-1 rounded-xl border border-neutral-300 pl-3 pr-2 text-[13px] font-semibold"
-                >
-                  {categories.find((c) => c.id === f.cat)?.name || "Без категорії"}
-                  <Icon d={I.chevronDown} size={16} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[60px]">
-                <span className="text-[13px] text-neutral-600">В наявності, шт</span>
-                <Stepper
-                  label={`залишок ${f.name}`}
-                  value={f.stock}
-                  onDec={() => updateFlower(f.id, { stock: Math.max(0, f.stock - 1) })}
-                  onInc={() => updateFlower(f.id, { stock: f.stock + 1 })}
-                  decDisabled={f.stock <= 0}
-                />
-              </div>
+              {open && (
+                <div className="flex flex-col gap-2.5 border-t border-neutral-100 bg-neutral-50 px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[13px] text-neutral-600">В наявності, шт</span>
+                    <Stepper
+                      label={`залишок ${f.name}`}
+                      value={f.stock}
+                      onDec={() => updateFlower(f.id, { stock: Math.max(0, f.stock - 1) })}
+                      onInc={() => updateFlower(f.id, { stock: f.stock + 1 })}
+                      decDisabled={f.stock <= 0}
+                    />
+                  </div>
+                  <button type="button" aria-label={`Назва і категорія: ${f.name}`} onClick={() => openEdit(f)} className={`${secondaryBtn} flex items-center justify-center gap-2`}>
+                    <Icon d={I.edit} size={16} />
+                    Назва і категорія
+                  </button>
+                </div>
+              )}
             </li>
           );
         })}

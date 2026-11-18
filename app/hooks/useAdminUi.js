@@ -12,7 +12,7 @@ export function useAdminUi({ data, showToast }) {
   const [draft, setDraft] = useState({ name: "", stock: 10, photo: null, cat: null });
   const [catInput, setCatInput] = useState(null); // null — поле нової категорії закрите
   const [optDraft, setOptDraft] = useState(null); // { fmt, group, parent, title, placeholder, name, photo } — шторка додавання варіанта формату
-  const [editFlower, setEditFlower] = useState(null); // { id, cat } — шторка зміни категорії квітки
+  const [editFlower, setEditFlower] = useState(null); // { id, name, cat } — шторка редагування квітки (назва й категорія)
   const [catManage, setCatManage] = useState(false); // режим видалення категорій
   const [catDelete, setCatDelete] = useState(null); // id категорії, яку збираються видалити
   const [saving, setSaving] = useState(false); // іде збереження в шторці
@@ -33,7 +33,7 @@ export function useAdminUi({ data, showToast }) {
 
   const openEdit = (f) => {
     closeFlowerSheets();
-    setEditFlower({ id: f.id, cat: f.cat });
+    setEditFlower({ id: f.id, name: f.name, cat: f.cat });
   };
 
   const saveDraft = async () => {
@@ -50,9 +50,16 @@ export function useAdminUi({ data, showToast }) {
   };
 
   const saveEdit = () => {
+    const name = editFlower.name.trim();
+    if (!name) return;
     const f = flowers.find((x) => x.id === editFlower.id);
-    data.updateFlower(editFlower.id, { cat: editFlower.cat });
-    showToast(`«${f?.name}»: категорію змінено`);
+    const patch = {};
+    if (name !== f?.name) patch.name = name;
+    if (editFlower.cat !== (f?.cat ?? null)) patch.cat = editFlower.cat;
+    if (Object.keys(patch).length > 0) {
+      data.updateFlower(editFlower.id, patch);
+      showToast(`«${name}»: зміни збережено`);
+    }
     closeFlowerSheets();
   };
 
