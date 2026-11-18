@@ -50,7 +50,8 @@ export function buildRecipe(catalog, input) {
   };
 }
 
-// Які фото передати моделі: обрані квіти, фото форми/паперу (не колір коробки: його задаємо текстом) і референси стилю формату.
+// Які фото передати моделі: обрані квіти, фото форми/паперу (не колір коробки: його задаємо текстом),
+// фото самого формату, якщо в нього немає виборів (кошик), і референси стилю формату.
 // Фото беремо з каталогу, тому в рецепт (що зберігається в базі) вони не потрапляють.
 export function recipeImages(catalog, recipe) {
   const flowers = recipe.flowers.map((f) => ({
@@ -64,6 +65,10 @@ export function recipeImages(catalog, recipe) {
     .filter((o) => !o.group.endsWith("Child"))
     .map((o) => ({ group: o.group, label: o.name, url: allOptions.find((x) => x.id === o.id)?.photo || null }))
     .filter((c) => c.url);
+  // формат без виборів (кошик): єдине фото контейнера — фото самого формату
+  if (format && format.groups.length === 0 && format.photo) {
+    container.push({ group: "format", label: format.name, url: format.photo });
+  }
   const styles = (catalog.refs?.[recipe.format.id] || []).map((r) => r.url).filter(Boolean);
   return { flowers, container, styles };
 }

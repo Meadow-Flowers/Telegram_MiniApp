@@ -78,7 +78,7 @@ const REQUEST_TIMEOUT_MS = 270_000;
 const PRICES = { imageIn: 8, textIn: 5, imageOut: 30 };
 
 const FORMAT_EN = { box: "Box", basket: "Basket", wrap: "Wrapped bouquet (paper wrap)" };
-const OPTION_EN = { shape: "Shape", shapeChild: "Color", color: "Paper color", form: "Composition shape" };
+const OPTION_EN = { format: "Container", shape: "Shape", shapeChild: "Color", color: "Paper color", form: "Composition shape" };
 // Орієнтовні розміри: підігнати за реальними букетами студії
 const SIZE_EN = {
   S: "small, about 20-25 cm across",
