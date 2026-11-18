@@ -29,7 +29,7 @@ export const POST = api(async ({ params, session }) => {
     photo: photoUrl(gen.image_path),
     caption,
     parse_mode: "HTML",
-  });
+  }, { timeoutMs: 10000 }); // довше, бо Telegram сам завантажує фото; обрив тут міг би призвести до дубля при повторі
 
   check(await sb.from("generations").update({ sent_to_studio_at: new Date().toISOString() }).eq("id", id));
   await logEvent(session.user.id, "sent_to_studio", { generationId: id });

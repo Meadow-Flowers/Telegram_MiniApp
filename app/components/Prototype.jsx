@@ -195,7 +195,8 @@ export default function Prototype() {
     }
     setActionBusy(true);
     try {
-      if (typeof tg.shareMessage === "function") {
+      // shareMessage є в скрипті Telegram завжди, але працює лише з версії 8.0; у старих нічого не відкривається
+      if (typeof tg.shareMessage === "function" && tg.isVersionAtLeast?.("8.0")) {
         const { messageId } = await apiFetch(`/api/generations/${activeVariant.id}/share`, { method: "POST" });
         tg.shareMessage(messageId, (ok) => ok && track("shared"));
       } else {
@@ -216,7 +217,7 @@ export default function Prototype() {
     if (!activeVariant) return;
     const tg = window.Telegram?.WebApp;
     const url = activeVariant.imageUrl;
-    if (tg && typeof tg.downloadFile === "function") {
+    if (tg && typeof tg.downloadFile === "function" && tg.isVersionAtLeast?.("8.0")) {
       tg.downloadFile({ url, file_name: `buket-${activeVariant.no}.jpg` }, (ok) => ok && track("saved"));
     } else if (tg) {
       tg.openLink(url);

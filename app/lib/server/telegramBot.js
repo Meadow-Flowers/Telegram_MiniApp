@@ -1,7 +1,8 @@
 import { HttpError } from "./errors";
 
 // Виклики Telegram Bot API від імені нашого бота (токен лежить лише на сервері).
-export async function botCall(method, payload) {
+// timeoutMs: скільки чекаємо відповіді Telegram (зазвичай вона приходить за долі секунди)
+export async function botCall(method, payload, { timeoutMs = 5000 } = {}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) throw new HttpError(503, "Бот не налаштований");
   let res;
@@ -10,6 +11,7 @@ export async function botCall(method, payload) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(timeoutMs), // щоб запит не висів безкінечно, якщо Telegram не відповідає
     });
   } catch {
     throw new HttpError(502, "Не вдалося зв'язатися з Telegram", "telegram");
