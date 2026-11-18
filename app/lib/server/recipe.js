@@ -32,7 +32,8 @@ export function buildRecipe(catalog, input) {
 
   const formatId = str(input?.formatId, { max: 20, label: "Формат" });
   const picks = input?.picks && typeof input.picks === "object" ? input.picks : {};
-  const choice = getFormatChoice(formats, formatId, picks);
+  // клієнт шле вибір лише обраного формату ({ групa: id варіанта }), а getFormatChoice чекає { формат: {...} }
+  const choice = getFormatChoice(formats, formatId, { [formatId]: picks });
   if (!choice.activeFormat || choice.activeFormat.id !== formatId) {
     throw new HttpError(409, "Цей формат зараз недоступний. Оновіть каталог.", "stale");
   }
