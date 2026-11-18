@@ -5,11 +5,9 @@ import PhotoPicker from "./PhotoPicker";
 export function AdminSheets({ app }) {
   const {
     addOpen,
-    catManage,
     closeFlowerSheets,
     draft,
     editFlower,
-    flowers,
     optDraft,
     saveDraft,
     saveEdit,
@@ -56,9 +54,19 @@ export function AdminSheets({ app }) {
     )}
 
     {editFlower && (
-      <Sheet title={`Категорія: ${flowers.find((f) => f.id === editFlower.id)?.name ?? ""}`} onClose={closeFlowerSheets}>
-        <CategoryPicker app={app} value={editFlower.cat} onSelect={(id) => setEditFlower((e) => ({ ...e, cat: id }))} />
-        <button type="button" className={primaryBtn} disabled={catManage} onClick={saveEdit}>
+      <Sheet title="Редагувати квітку" onClose={closeFlowerSheets}>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[13px] text-neutral-600">Назва</span>
+          <input
+            value={editFlower.name}
+            onChange={(e) => setEditFlower((x) => ({ ...x, name: e.target.value }))}
+            onKeyDown={(e) => e.key === "Enter" && editFlower.name.trim() && saveEdit()}
+            aria-label="Назва квітки"
+            className="h-11 rounded-xl border border-neutral-300 px-3 text-[15px] outline-none focus:border-neutral-900"
+          />
+        </label>
+        <CategoryPicker selectOnly app={app} value={editFlower.cat} onSelect={(id) => setEditFlower((e) => ({ ...e, cat: id }))} />
+        <button type="button" className={primaryBtn} disabled={!editFlower.name.trim()} onClick={saveEdit}>
           Зберегти
         </button>
       </Sheet>

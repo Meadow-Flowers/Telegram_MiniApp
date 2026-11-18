@@ -1,7 +1,8 @@
 import { Icon, I, secondaryBtn, linkBtn } from "./ui";
 
 // manageOnly — окрема шторка «Категорії»: завжди режим видалення + додавання нової, без перемикача «Готово»
-export default function CategoryPicker({ app, value, onSelect, manageOnly = false }) {
+// selectOnly — лише вибір зі списку (шторка редагування квітки): без створення й видалення категорій
+export default function CategoryPicker({ app, value, onSelect, manageOnly = false, selectOnly = false }) {
   const {
     catDelete,
     catInput,
@@ -14,14 +15,15 @@ export default function CategoryPicker({ app, value, onSelect, manageOnly = fals
     setCatInput,
     setCatManage,
   } = app;
-  const manage = manageOnly || catManage;
+  const manage = !selectOnly && (manageOnly || catManage);
+  const canCreate = !selectOnly && (manageOnly || !catManage);
   const delCat = categories.find((c) => c.id === catDelete);
   const delCount = flowers.filter((f) => f.cat === catDelete).length;
   return (
     <div className="flex flex-col gap-2" role="group" aria-label="Категорія">
       <div className={`items-center justify-between ${manageOnly ? "hidden" : "flex"}`}>
         <span className="text-[13px] text-neutral-600">Категорія</span>
-        {categories.length > 0 && (
+        {!selectOnly && categories.length > 0 && (
           <button
             type="button"
             className={`${linkBtn} -my-2.5`}
@@ -76,7 +78,7 @@ export default function CategoryPicker({ app, value, onSelect, manageOnly = fals
             </button>
           ),
         )}
-        {(manageOnly || !catManage) && catInput === null && (
+        {canCreate && catInput === null && (
           <button
             type="button"
             onClick={() => setCatInput("")}
@@ -105,7 +107,7 @@ export default function CategoryPicker({ app, value, onSelect, manageOnly = fals
           </div>
         </div>
       )}
-      {(manageOnly || !catManage) && catInput !== null && (
+      {canCreate && catInput !== null && (
         <div className="flex gap-2">
           <input
             autoFocus

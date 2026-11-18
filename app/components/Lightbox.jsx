@@ -72,9 +72,15 @@ export default function ZoomPhoto({ url, className = "", iconSize, label = "Ві
           setConfirmDel(false);
           setOpen(true);
         }}
-        className={`shrink-0 overflow-hidden ${className}`}
+        className={`relative shrink-0 overflow-hidden ${className}`}
       >
         <Photo url={url} className="h-full w-full" iconSize={iconSize} />
+        {/* позначка «фото можна змінити»: тап по фото відкриває переглядач із «Замінити» і «Видалити» */}
+        {url && (onPick || onRemove) && (
+          <span className="pointer-events-none absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-md bg-black text-white">
+            <Icon d={I.camera} size={11} />
+          </span>
+        )}
       </button>
       {open && (
         <div role="dialog" aria-label="Фото" className="fixed inset-0 z-50 flex flex-col bg-black/90" onClick={() => setOpen(false)}>
