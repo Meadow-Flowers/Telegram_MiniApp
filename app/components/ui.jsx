@@ -42,6 +42,7 @@ export const I = {
       <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </>
   ),
+  plus: <path d="M12 5v14M5 12h14" />,
   chevronDown: <path d="M6 9l6 6 6-6" />,
   refresh: (
     <>
@@ -58,24 +59,25 @@ export const I = {
   ),
 };
 
-export function PhotoPlaceholder({ className = "", label, iconSize = 32 }) {
+// icon — що малювати в заглушці: за замовчуванням картинка, а там, де фото можна додати, «+»
+export function PhotoPlaceholder({ className = "", label, iconSize = 32, icon = I.image }) {
   return (
     <div
       className={`flex flex-col items-center justify-center gap-1 bg-neutral-200 text-neutral-500 ${className}`}
     >
-      <Icon d={I.image} size={iconSize} />
+      <Icon d={icon} size={iconSize} />
       {label && <span className="text-xs">{label}</span>}
     </div>
   );
 }
 
 // Фото з бази або, якщо його ще немає, заглушка
-export function Photo({ url, className = "", label, iconSize = 32 }) {
+export function Photo({ url, className = "", label, iconSize = 32, icon }) {
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={url} alt="" loading="lazy" className={`bg-neutral-200 object-cover ${className}`} />;
   }
-  return <PhotoPlaceholder className={className} label={label} iconSize={iconSize} />;
+  return <PhotoPlaceholder className={className} label={label} iconSize={iconSize} icon={icon} />;
 }
 
 export function Stepper({ value, onDec, onInc, decDisabled, incDisabled, dark = false, label }) {

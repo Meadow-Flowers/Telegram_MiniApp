@@ -37,7 +37,7 @@ export default function ZoomPhoto({ url, className = "", iconSize, label = "Ві
     return (
       <>
         <button type="button" aria-label="Додати фото" onClick={() => input.current?.click()} className={`shrink-0 ${className}`}>
-          <Photo url={null} className="h-full w-full" iconSize={iconSize} />
+          <Photo url={null} className="h-full w-full" iconSize={iconSize} icon={I.plus} />
         </button>
         <input ref={input} type="file" accept="image/*" hidden onChange={pick} />
       </>
