@@ -1,9 +1,19 @@
 import { Toggle, linkBtn } from "../../components/ui";
 import ZoomPhoto from "../../components/Lightbox";
-import ShapeIllustration from "../../components/ShapeIllustration";
 
 export function AdminFormatsTab({ app }) {
-  const { formats, openOpt, setOptionPhoto, showToast, updateChild, updateFormat, updateOption } = app;
+  const {
+    formats,
+    openOpt,
+    removeFormatPhoto,
+    removeOptionPhoto,
+    setFormatPhoto,
+    setOptionPhoto,
+    showToast,
+    updateChild,
+    updateFormat,
+    updateOption,
+  } = app;
   return (
     <div className="flex flex-col gap-4 p-4">
       <p className="text-[13px] leading-relaxed text-neutral-600">
@@ -14,6 +24,7 @@ export function AdminFormatsTab({ app }) {
       {formats.map((fm) => (
         <section key={fm.id} className="flex flex-col gap-3 rounded-2xl border border-neutral-200 p-3.5">
           <div className="flex items-center gap-3">
+            <ZoomPhoto url={fm.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setFormatPhoto(fm.id, blob)} onRemove={() => removeFormatPhoto(fm.id)} onError={showToast} />
             <div className="min-w-0 flex-1">
               <div className="text-[17px] font-semibold">{fm.name}</div>
               <div className="text-xs text-neutral-600">{fm.on ? "Показується клієнтам" : "Вимкнено"}</div>
@@ -42,7 +53,7 @@ export function AdminFormatsTab({ app }) {
                 <ul className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200">
                   {g.items.map((it) => (
                     <li key={it.id} className="flex items-center gap-3 px-3 py-2.5">
-                      <ZoomPhoto url={it.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setOptionPhoto(it.id, blob)} onError={showToast} />
+                      <ZoomPhoto url={it.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setOptionPhoto(it.id, blob)} onRemove={() => removeOptionPhoto(it.id)} onError={showToast} />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[15px] font-semibold">{it.name}</div>
                         <div className="text-xs text-neutral-600">
@@ -65,7 +76,7 @@ export function AdminFormatsTab({ app }) {
                     return (
                       <div key={it.id} className="flex flex-col gap-2.5 rounded-2xl border border-neutral-200 p-3">
                         <div className="flex items-center gap-3">
-                          <ShapeIllustration name={it.name} className="h-14 w-14 shrink-0 rounded-lg" />
+                          <ZoomPhoto url={it.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setOptionPhoto(it.id, blob)} onRemove={() => removeOptionPhoto(it.id)} onError={showToast} />
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-[15px] font-semibold">{it.name}</div>
                             <div className="text-xs text-neutral-600">
@@ -97,7 +108,7 @@ export function AdminFormatsTab({ app }) {
                             <ul className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200">
                               {it.children.map((c) => (
                                 <li key={c.id} className="flex items-center gap-3 px-3 py-2.5">
-                                  <ZoomPhoto url={c.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setOptionPhoto(c.id, blob)} onError={showToast} />
+                                  <ZoomPhoto url={c.photo} className="h-14 w-14 rounded-lg" iconSize={18} onPick={(blob) => setOptionPhoto(c.id, blob)} onRemove={() => removeOptionPhoto(c.id)} onError={showToast} />
                                   <div className="min-w-0 flex-1">
                                     <div className="truncate text-[15px] font-semibold">{c.name}</div>
                                     <div className="text-xs text-neutral-600">
