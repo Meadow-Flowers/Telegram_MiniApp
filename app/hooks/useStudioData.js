@@ -153,6 +153,19 @@ export function useStudioData({ onError } = {}) {
       return url;
     });
 
+  // видалення фото: сама квітка (або варіант, формат) лишається, зникає тільки картинка
+  const removePhoto = (kind, id) =>
+    attempt(async () => {
+      await apiFetch("/api/admin/photos", { method: "DELETE", json: { kind, id } });
+      return true;
+    });
+
+  const removeFlowerPhoto = async (id) => {
+    const ok = await removePhoto("flower", id);
+    if (ok) setFlowers((fs) => fs.map((f) => (f.id === id ? { ...f, photo: null } : f)));
+    return ok;
+  };
+
   // повертає { id, created }; якщо така категорія вже є, повертає наявну
   const addCategory = (name) =>
     attempt(async () => {
@@ -226,6 +239,26 @@ export function useStudioData({ onError } = {}) {
       return url;
     });
 
+  const removeOptionPhoto = async (id) => {
+    const ok = await removePhoto("option", id);
+    if (ok) patchOptionById(id, { photo: null });
+    return ok;
+  };
+
+  // фото самого формату (коробка, кошик, упаковка)
+  const setFormatPhoto = (id, blob) =>
+    attempt(async () => {
+      const { url } = await upload({ kind: "format", id }, blob);
+      setFormats((fs) => fs.map((f) => (f.id === id ? { ...f, photo: url } : f)));
+      return url;
+    });
+
+  const removeFormatPhoto = async (id) => {
+    const ok = await removePhoto("format", id);
+    if (ok) setFormats((fs) => fs.map((f) => (f.id === id ? { ...f, photo: null } : f)));
+    return ok;
+  };
+
   /* ---------- референси стилю ---------- */
 
   const addStyleRef = (formatId, blob) =>
@@ -264,6 +297,10 @@ export function useStudioData({ onError } = {}) {
     updateFlower,
     addFlower,
     setFlowerPhoto,
+    removeFlowerPhoto,
+    removeOptionPhoto,
+    setFormatPhoto,
+    removeFormatPhoto,
     addCategory,
     removeCategory,
     updateFormat,

@@ -5,9 +5,10 @@ import { Photo, Icon, I } from "./ui";
 import { resizeImage } from "../lib/image";
 
 // Фото, яке відкривається на весь екран по тапу. Якщо передано onPick, у переглядачі є «Замінити фото».
-export default function ZoomPhoto({ url, className = "", iconSize, label = "Відкрити фото", onPick, onError }) {
+export default function ZoomPhoto({ url, className = "", iconSize, label = "Відкрити фото", onPick, onRemove, onError }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
   const input = useRef(null);
 
   useEffect(() => {
@@ -32,6 +33,23 @@ export default function ZoomPhoto({ url, className = "", iconSize, label = "Ві
     }
   }
 
+  // видалення в два тапи, щоб не стерти фото випадково
+  async function remove() {
+    if (!confirmDel) {
+      setConfirmDel(true);
+      return;
+    }
+    setBusy(true);
+    try {
+      if (await onRemove()) setOpen(false);
+    } catch (ex) {
+      onError?.(ex.message);
+    } finally {
+      setBusy(false);
+      setConfirmDel(false);
+    }
+  }
+
   // без фото: якщо можна додати, тап відкриває вибір файлу
   if (!url && onPick) {
     return (
@@ -50,7 +68,10 @@ export default function ZoomPhoto({ url, className = "", iconSize, label = "Ві
         type="button"
         aria-label={label}
         disabled={!url}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setConfirmDel(false);
+          setOpen(true);
+        }}
         className={`shrink-0 overflow-hidden ${className}`}
       >
         <Photo url={url} className="h-full w-full" iconSize={iconSize} />
@@ -66,17 +87,31 @@ export default function ZoomPhoto({ url, className = "", iconSize, label = "Ві
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={url} alt="" className="max-h-full max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
           </div>
-          {onPick && (
-            <div className="flex justify-center p-4" onClick={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => input.current?.click()}
-                className="h-11 rounded-xl bg-white px-5 text-sm font-semibold disabled:opacity-40"
-              >
-                {busy ? "Завантаження…" : "Замінити фото"}
-              </button>
-              <input ref={input} type="file" accept="image/*" hidden onChange={pick} />
+          {(onPick || onRemove) && (
+            <div className="flex justify-center gap-2 p-4" onClick={(e) => e.stopPropagation()}>
+              {onPick && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => input.current?.click()}
+                  className="h-11 rounded-xl bg-white px-5 text-sm font-semibold disabled:opacity-40"
+                >
+                  {busy ? "Зачекайте…" : "Замінити фото"}
+                </button>
+              )}
+              {onRemove && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={remove}
+                  className={`h-11 rounded-xl px-5 text-sm font-semibold disabled:opacity-40 ${
+                    confirmDel ? "bg-red-600 text-white" : "border border-white/60 text-white"
+                  }`}
+                >
+                  {confirmDel ? "Точно видалити?" : "Видалити фото"}
+                </button>
+              )}
+              {onPick && <input ref={input} type="file" accept="image/*" hidden onChange={pick} />}
             </div>
           )}
         </div>

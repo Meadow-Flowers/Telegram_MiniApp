@@ -19,7 +19,7 @@ export async function loadCatalog() {
   const [cats, flowers, formats, groups, options, refs, settings] = await Promise.all([
     sb.from("categories").select("id, name").order("created_at"),
     sb.from("flowers").select("id, name, category_id, stock, visible, photo_path").order("created_at"),
-    sb.from("formats").select("id, name, enabled, sort").order("sort"),
+    sb.from("formats").select("id, name, enabled, photo_path, sort").order("sort"),
     sb.from("format_groups").select("id, format_id, key, label, child_label, example, sort").order("sort"),
     sb
       .from("format_options")
@@ -45,6 +45,7 @@ export async function loadCatalog() {
       id: fm.id,
       name: fm.name,
       on: fm.enabled,
+      photo: photoUrl(fm.photo_path),
       groups: groupsData
         .filter((g) => g.format_id === fm.id)
         .map((g) => ({

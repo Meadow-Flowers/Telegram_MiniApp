@@ -25,6 +25,7 @@ export function FormatScreen({ app }) {
                 <ChoiceCard
                   key={f.id}
                   label={f.name}
+                  photo={f.photo}
                   selected={activeFormat.id === f.id}
                   onClick={() => setFormat(f.id)}
                 />
