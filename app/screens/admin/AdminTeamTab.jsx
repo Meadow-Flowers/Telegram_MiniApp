@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
+import { InfoHead, linkBtn, secondaryBtn } from "../../components/ui";
 
 const ROLE_LABEL = { owner: "Власник", staff: "Працівник", client: "Клієнт" };
 
@@ -36,27 +37,27 @@ export function AdminTeamTab({ app }) {
     }
   }
 
-  if (error) return <p className="p-4 text-sm text-red-700">{error}</p>;
-  if (!users) return <p className="p-4 text-sm text-neutral-600">Завантаження…</p>;
+  if (error) return <p className="p-3 t-body text-rust">{error}</p>;
+  if (!users) return <p className="p-3 t-body text-neutral-600">Завантаження…</p>;
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <p className="text-[13px] leading-relaxed text-neutral-600">
-        Тут усі, хто відкривав додаток. Працівник бачить «Адмінку» й генерує без ліміту. Щоб додати колегу,
-        попросіть його відкрити бота, а потім оновіть список і натисніть «Зробити працівником».
-      </p>
-      <button type="button" onClick={load} className="h-11 self-start px-1 text-sm font-semibold underline underline-offset-2">
-        Оновити список
+    <div className="flex flex-col gap-3 p-3">
+      <InfoHead
+        title="Команда"
+        info="Тут усі, хто відкривав додаток. Працівник бачить «Адмінку» й генерує без ліміту. Щоб додати колегу, попросіть його відкрити бота, а потім оновіть список і натисніть «Зробити працівником»."
+      />
+      <button type="button" onClick={load} className={`${linkBtn} self-start`}>
+        <span className="link-ul">Оновити список</span>
       </button>
-      <ul className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200">
+      <ul className="divide-y divide-forest border border-forest">
         {users.map((u) => (
-          <li key={u.id} className="flex items-center gap-3 px-3 py-2.5">
+          <li key={u.id} className="flex items-center gap-3 px-3 py-3">
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[15px] font-semibold">
+              <div className="truncate t-title">
                 {u.name}
                 {u.isMe && <span className="font-normal text-neutral-600"> (ви)</span>}
               </div>
-              <div className="truncate text-xs text-neutral-600">
+              <div className="truncate t-caption text-neutral-600">
                 {u.username ? `@${u.username} · ` : ""}
                 {ROLE_LABEL[u.role]}
               </div>
@@ -66,7 +67,7 @@ export function AdminTeamTab({ app }) {
                 type="button"
                 disabled={busyId === u.id}
                 onClick={() => setRole(u, "staff")}
-                className="h-11 rounded-xl border border-neutral-900 px-3 text-[13px] font-semibold disabled:opacity-40"
+                className={`${secondaryBtn} px-3`}
               >
                 Зробити працівником
               </button>
@@ -76,7 +77,7 @@ export function AdminTeamTab({ app }) {
                 type="button"
                 disabled={busyId === u.id}
                 onClick={() => setRole(u, "client")}
-                className="h-11 rounded-xl border border-neutral-300 px-3 text-[13px] font-semibold disabled:opacity-40"
+                className={`${secondaryBtn} px-3`}
               >
                 Забрати роль
               </button>

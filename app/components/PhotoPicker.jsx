@@ -44,27 +44,27 @@ export default function PhotoPicker({ value, onChange, onBusy, label = "Зава
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className={`relative flex h-28 shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl text-sm ${
-          preview ? "bg-neutral-200" : "border border-dashed border-neutral-500"
+        className={`relative flex h-28 shrink-0 flex-col items-center justify-center gap-1 overflow-hidden t-body ${
+          preview ? "bg-surface" : "border border-dashed border-forest"
         }`}
       >
         {preview ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="" className="h-full w-full object-cover" />
-            <span className="absolute bottom-1.5 rounded-full bg-neutral-900/80 px-2.5 py-1 text-xs text-white">
+            <span className="absolute bottom-1.5 bg-forest/90 px-3 py-1 t-caption text-white">
               Натисніть, щоб замінити
             </span>
           </>
         ) : (
           <>
-            <Icon d={I.image} size={26} />
+            <Icon d={I.image} />
             {busy ? "Обробка…" : label}
           </>
         )}
       </button>
       <input ref={inputRef} type="file" accept="image/*" hidden onChange={pick} />
-      {error && <p className="text-xs text-red-700">{error}</p>}
+      {error && <p className="t-caption text-rust">{error}</p>}
     </div>
   );
 }

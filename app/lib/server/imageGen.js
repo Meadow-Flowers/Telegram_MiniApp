@@ -14,19 +14,18 @@ let fontsReady = false;
 
 function ensureFonts() {
   if (fontsReady) return;
+  // PT Mono, той самий шрифт, що й для основного тексту в додатку (є лише одна вага, 400)
   for (const [file, family] of [
-    ["roboto-cyrillic-400-normal.woff", "RobotoCyr"],
-    ["roboto-latin-400-normal.woff", "RobotoLat"],
-    ["roboto-cyrillic-700-normal.woff", "RobotoCyrBold"],
-    ["roboto-latin-700-normal.woff", "RobotoLatBold"],
+    ["pt-mono-cyrillic-400-normal.woff", "PTMonoCyr"],
+    ["pt-mono-latin-400-normal.woff", "PTMonoLat"],
   ]) {
     GlobalFonts.registerFromPath(path.join(FONT_DIR, file), family);
   }
   fontsReady = true;
 }
 
-const FONT = (size) => `${size}px RobotoCyr, RobotoLat`;
-const FONT_BOLD = (size) => `${size}px RobotoCyrBold, RobotoLatBold`;
+const FONT = (size) => `${size}px PTMonoCyr, PTMonoLat`;
+const FONT_BOLD = FONT; // у PT Mono немає жирного накреслення
 
 // переносить текст по словах під задану ширину
 function wrapLines(ctx, text, maxWidth) {
@@ -245,9 +244,15 @@ async function generateWithOpenAI({ recipe, images, promptTemplate }, key) {
 
 // Єдина точка входу. input: { recipe, summary, variantNo, images, promptTemplate }.
 // Без OPENAI_API_KEY працює заглушка, щоб додаток можна було розробляти без витрат.
+// Заглушку можна ввімкнути й з ключем: IMAGE_STUB=1 у .env.local (для роботи над дизайном без витрат).
+// Щоб екран «генерується…» було видно, заглушка чекає IMAGE_STUB_DELAY_MS (за замовчуванням 6 с).
 export async function generateBouquetImage(input) {
   const key = process.env.OPENAI_API_KEY;
-  if (!key) return { image: await renderStub(input), model: "stub" };
+  if (!key || process.env.IMAGE_STUB === "1") {
+    const delay = Number(process.env.IMAGE_STUB_DELAY_MS ?? 6000);
+    if (delay > 0) await new Promise((r) => setTimeout(r, delay));
+    return { image: await renderStub(input), model: "stub" };
+  }
   return generateWithOpenAI(input, key);
 }
 

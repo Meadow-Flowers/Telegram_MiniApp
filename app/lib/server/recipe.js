@@ -39,7 +39,7 @@ export function buildRecipe(catalog, input) {
   }
 
   const size = sizeFor(total);
-  const summary = `${picked.map((f) => `${f.name} ×${f.count}`).join(", ")} · ${choice.formatLabel} · розмір ${size}`;
+  const summary = `${picked.map((f) => `${f.name} ×${f.count}`).join(", ")} · ${choice.formatLabel}`;
 
   return {
     flowers: picked,

@@ -1,13 +1,545 @@
 @import "tailwindcss";
 
+/*
+  Дизайн-система Meadow Flowers (версія 0). Усе, що стосується кольорів, шрифту й розмірів тексту, живе тут.
+  Кольори, шрифт і правила взято з брендбуку, див. документ «Основа дизайн-системи».
+*/
+/*
+  СИСТЕМА РОЗМІРІВ (одиниця 4 px)
+  Відступи:  4 · 8 · 12 · 16 · 24 · 32  (gap-1 · 2 · 3 · 4 · 6 · 8). Інших значень не використовуємо.
+    поля екрана 12, внутрішній відступ блоків 12, між заголовком і вмістом 12, між пов'язаними елементами 16,
+    між розділами 24, верх і низ екрана 24, рядки тексту в блоці 4, іконка й напис 8.
+  Висоти:    кнопка, таб, поле, лічильник 44; головна кнопка 48; шапка 48; іконка 20;
+             мініатюри 56 · 64 · 80; кнопка-квадрат у кутку фото 32.
+  Лінії:     1 px, темно-зелені. Рамки малюємо з border-box, висоту рахуємо разом із рамкою
+             (тому вкладені елементи беруть h-full, а не власну висоту).
+  Лічильник: «− число +», контейнер 44 з темною рамкою і прозорим фоном (колір тла), квадрати − і + темно-зелені,
+             36 px з відступом 3. Однаковий у каталозі й в адмінці.
+  Кути:      гострі. Квадрати по кутах: 4 px, відступ 6 px; на кнопках усі чотири, в інших місцях лише в кутах,
+             поруч з якими немає тексту й інших елементів.
+*/
+@theme inline {
+  /* Основний текст, підписи, кнопки: PT Mono. Заголовки: Bona Nova (клас font-display). */
+  --font-sans:
+    var(--font-ptmono), "PT Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display:
+    var(--font-bona), "Bona Nova", Georgia, "Times New Roman", serif;
+}
+
+@theme {
+  /* Бренд */
+  --color-cream: #f4f1eb;
+  --color-forest: #29463b;
+  --color-blush: #f1e4df;
+  --color-rust: #8a4120;
+  --color-ochre: #c38738;
+  --color-sand: #eddfc3;
+  /* Єдина додаткова підложка: блоки на кремовому тлі, внутрішні контейнери, плитки, заглушки фото */
+  --color-surface: #ece7db;
+
+  /* Стара сіра шкала Tailwind замінена відтінками зеленого й кремового: так адмінка, яку ще не
+     перероблено, вже виглядає в тому самому стилі. neutral-900 = темно-зелений. */
+  --color-neutral-50: #faf8f3;
+  --color-neutral-100: #efebe1;
+  --color-neutral-200: #e6e0d2;
+  --color-neutral-300: #bbc1ba;
+  --color-neutral-400: #98a39c;
+  --color-neutral-500: #76887e;
+  --color-neutral-600: #62766c;
+  --color-neutral-700: #46594f;
+  --color-neutral-800: #35493f;
+  --color-neutral-900: #29463b;
+  --color-neutral-950: #1d3229;
+
+  /* Кути гострі, заокруглені лише там, де написано rounded-full (перемикачі, мітки) */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+
+  /* PT Mono має одну вагу, тому жирність Tailwind не використовуємо (інакше браузер малює штучний жирний) */
+  --font-weight-normal: 400;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 400;
+  --font-weight-bold: 400;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.375rem;
+}
+
 :root {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #171717;
+  color: var(--color-forest);
+}
+
+html {
+  background: var(--color-neutral-200);
 }
 
 body {
   margin: 0;
-  background: #e5e5e5;
+  background: var(--color-neutral-200);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+input::placeholder {
+  color: var(--color-neutral-600);
+  opacity: 1;
+}
+
+/* Стилі тексту. Заголовки: Bona Nova 700. Усе інше: PT Mono 400. */
+@layer components {
+  .t-h1 {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .t-h2 {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .t-h3 {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+  .t-title {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .t-number {
+    font-size: 28px;
+    line-height: 32px;
+    font-weight: 400;
+  }
+  .t-body {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 400;
+  }
+  .t-caption {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+  }
+  .t-button {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ---------- Анімації (за мотивами сайту-референсу) ----------
+   Одна плавна крива для всього: різкий старт і м'яке гальмування. */
+:root {
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Маленькі квадрати по кутах елемента (фірмова деталь референсу, 4 px, відступ 6 px від краю).
+   На кнопках ставимо всі чотири (cn-all), в інших місцях лише в тих кутах, де вільне місце: cn-tl, cn-tr,
+   cn-bl, cn-br. Колір беруть із тексту елемента або зі змінної --corner. */
+.corners {
+  position: relative;
+  --tl: 0px;
+  --tr: 0px;
+  --bl: 0px;
+  --br: 0px;
+}
+.cn-all {
+  --tl: 4px;
+  --tr: 4px;
+  --bl: 4px;
+  --br: 4px;
+}
+.cn-tl {
+  --tl: 4px;
+}
+.cn-tr {
+  --tr: 4px;
+}
+.cn-bl {
+  --bl: 4px;
+}
+.cn-br {
+  --br: 4px;
+}
+.corners::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--corner, currentColor), var(--corner, currentColor)) 0
+      0 / var(--tl) var(--tl) no-repeat,
+    linear-gradient(var(--corner, currentColor), var(--corner, currentColor))
+      100% 0 / var(--tr) var(--tr) no-repeat,
+    linear-gradient(var(--corner, currentColor), var(--corner, currentColor)) 0
+      100% / var(--bl) var(--bl) no-repeat,
+    linear-gradient(var(--corner, currentColor), var(--corner, currentColor))
+      100% 100% / var(--br) var(--br) no-repeat;
+  transition: background-color 0.3s var(--ease);
+}
+
+/* Кнопки: заливка виїжджає знизу, колір тексту змінюється разом із нею */
+.btn-roll {
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0;
+  transition:
+    background-size 0.6s var(--ease),
+    color 0.45s var(--ease);
+}
+.btn-primary {
+  background-color: var(--color-forest);
+  background-image: linear-gradient(var(--color-cream), var(--color-cream));
+  color: var(--color-cream);
+}
+.btn-secondary {
+  background-color: transparent;
+  background-image: linear-gradient(var(--color-forest), var(--color-forest));
+  color: var(--color-forest);
+}
+.btn-primary-inv {
+  background-color: var(--color-cream);
+  background-image: linear-gradient(var(--color-forest), var(--color-forest));
+  color: var(--color-forest);
+}
+.btn-secondary-inv {
+  background-color: transparent;
+  background-image: linear-gradient(var(--color-cream), var(--color-cream));
+  color: var(--color-cream);
+}
+.btn-primary-inv:not(:disabled):active,
+.btn-secondary-inv:not(:disabled):active {
+  background-size: 100% 100%;
+}
+.btn-primary-inv:not(:disabled):active {
+  color: var(--color-cream);
+}
+.btn-secondary-inv:not(:disabled):active {
+  color: var(--color-forest);
+}
+@media (hover: hover) {
+  .btn-primary-inv:not(:disabled):hover {
+    background-size: 100% 100%;
+    color: var(--color-cream);
+  }
+  .btn-secondary-inv:not(:disabled):hover {
+    background-size: 100% 100%;
+    color: var(--color-forest);
+  }
+}
+.btn-primary:not(:disabled):active {
+  background-size: 100% 100%;
+  color: var(--color-forest);
+}
+.btn-secondary:not(:disabled):active {
+  background-size: 100% 100%;
+  color: var(--color-cream);
+}
+@media (hover: hover) {
+  .btn-primary:not(:disabled):hover {
+    background-size: 100% 100%;
+    color: var(--color-forest);
+  }
+  .btn-secondary:not(:disabled):hover {
+    background-size: 100% 100%;
+    color: var(--color-cream);
+  }
+}
+
+/* Кнопка-посилання: підкреслення під текстом. При наведенні воно «пробігає»: зникає вправо й виїжджає знову зліва */
+.link-ul {
+  padding-bottom: 3px;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px
+    no-repeat;
+}
+@keyframes link-wipe {
+  0% {
+    background-position: 100% 100%;
+    background-size: 100% 1px;
+  }
+  45% {
+    background-position: 100% 100%;
+    background-size: 0 1px;
+  }
+  46% {
+    background-position: 0 100%;
+    background-size: 0 1px;
+  }
+  100% {
+    background-position: 0 100%;
+    background-size: 100% 1px;
+  }
+}
+@media (hover: hover) {
+  .link-btn:hover .link-ul {
+    animation: link-wipe 0.7s var(--ease);
+  }
+}
+
+/* Поява картки при прокрутці: підйом на 18 px і проявлення, фото трохи «осідає» */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+  transition-delay: var(--delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+.reveal .card-img {
+  transform: scale(1.1);
+  transition: transform 1.2s var(--ease);
+  transition-delay: var(--delay, 0ms);
+}
+.reveal.is-in .card-img {
+  transform: scale(1);
+}
+/* Збільшення фото при наведенні діє лише на ту картку (.zoom-card), над якою курсор, а не на весь ряд */
+@media (hover: hover) {
+  .reveal.is-in .zoom-card:hover .card-img,
+  .reveal.is-in.zoom-card:hover .card-img {
+    transform: scale(1.04);
+    transition-delay: 0ms;
+  }
+}
+
+/* Переливи всередині темно-зеленої кнопки (кнопка «Згенерувати»): два м'яких світлих плями (охра й шавлія з палітри)
+   повільно пливуть назустріч одна одній. Ховаються, коли заливка виїжджає при наведенні. Працює разом із border-beam. */
+@property --flow-a {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -20%;
+}
+@property --flow-b {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 120%;
+}
+@keyframes flow-a {
+  to {
+    --flow-a: 120%;
+  }
+}
+@keyframes flow-b {
+  to {
+    --flow-b: -20%;
+  }
+}
+.btn-flow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      48% 190% at var(--flow-a) 50%,
+      rgb(195 135 56 / 0.62),
+      transparent 72%
+    ),
+    radial-gradient(
+      44% 190% at var(--flow-b) 50%,
+      rgb(176 214 188 / 0.42),
+      transparent 72%
+    );
+  animation:
+    flow-a 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate,
+    flow-b 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  transition: opacity 0.45s var(--ease);
+}
+.btn-primary:not(:disabled):active .btn-flow {
+  opacity: 0;
+}
+@media (hover: hover) {
+  .btn-primary:not(:disabled):hover .btn-flow {
+    opacity: 0;
+  }
+}
+.btn-primary:disabled .btn-flow {
+  display: none;
+}
+
+/* Графіки у вкладці «Статистика»: смужки виростають, лінії домальовуються, заливка й клітинки проявляються,
+   коли картка з'являється на екрані (див. .reveal / .is-in) */
+.reveal .bar-grow {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.reveal.is-in .bar-grow {
+  transform: none;
+  transition: transform 0.9s var(--ease) var(--delay, 0ms);
+}
+.reveal .line-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.reveal.is-in .line-draw {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.4s var(--ease);
+}
+.reveal .fade-in {
+  opacity: 0;
+}
+.reveal.is-in .fade-in {
+  opacity: 1;
+  transition: opacity 0.8s var(--ease) calc(var(--delay, 0ms) + 200ms);
+}
+
+/* Дерево вкладень (кольори під формою коробки у вкладці «Формат» в адмінці).
+   Від фото батька (16 px від його лівого краю) вниз іде лінія, до кожного вкладення горизонтальна гілка
+   довжиною 32 px із квадратним вузлом 5 px на кінці. Вкладення зсунуті на 48 px, відступ згори 24 px.
+   --y: висота гілки від верху елемента (середина фото 80 px). */
+.tree {
+  padding-top: 24px;
+  padding-left: 48px;
+}
+.tree-item {
+  position: relative;
+  padding-bottom: 12px;
+  --y: 40px;
+}
+.tree-item:last-child {
+  padding-bottom: 0;
+}
+.tree-item::before,
+.tree-item::after {
+  content: "";
+  position: absolute;
+  left: -32px;
+  pointer-events: none;
+}
+.tree-item::before {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-forest);
+}
+.tree-item:first-child::before {
+  top: -24px;
+}
+.tree-item:last-child::before {
+  bottom: auto;
+  height: var(--y);
+}
+.tree-item:first-child:last-child::before {
+  height: calc(var(--y) + 24px);
+}
+.tree-item::after {
+  top: calc(var(--y) - 2px);
+  width: 32px;
+  height: 5px;
+  background:
+    linear-gradient(var(--color-forest), var(--color-forest)) 0 2px / 100% 1px
+      no-repeat,
+    linear-gradient(var(--color-forest), var(--color-forest)) 100% 0 / 5px 5px
+      no-repeat;
+}
+
+/* Перехід між екранами */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.screen-in {
+  animation: screen-in 0.5s var(--ease) backwards;
+}
+
+/* Фото плавно проявляється, коли завантажилось */
+@keyframes img-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.img-in {
+  animation: img-in 0.4s var(--ease) both;
+}
+
+/* Результат генерації осідає з легкого збільшення: продовжує «пірнання» з екрана генерації */
+@keyframes result-zoom {
+  from {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.result-zoom {
+  animation: result-zoom 1.3s var(--ease) both;
+}
+
+/* Власна кнопка очищення в пошуку замість вбудованого хрестика браузера */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .bar-grow,
+  .reveal .line-draw,
+  .reveal .fade-in {
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+  .reveal,
+  .reveal .card-img,
+  .screen-in,
+  .img-in,
+  .result-zoom,
+  .link-ul,
+  .btn-flow,
+  .btn-roll {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {

@@ -1,2 +1,2 @@
-Шрифт Roboto (Apache License 2.0), підмножини кирилиці й латиниці з пакета @fontsource/roboto.
+Шрифт PT Mono (SIL Open Font License 1.1), підмножини кирилиці й латиниці з пакета @fontsource/pt-mono.
 Потрібен серверу, щоб вписувати склад букета в картинку.

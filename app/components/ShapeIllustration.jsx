@@ -9,7 +9,7 @@ export default function ShapeIllustration({ name, className = "" }) {
   const key = (name || "").toLowerCase();
   const shape = SHAPES[key] || <rect x="14" y="14" width="36" height="36" rx="6" />;
   return (
-    <div className={`flex items-center justify-center bg-neutral-100 text-neutral-500 ${className}`}>
+    <div className={`flex items-center justify-center bg-surface text-neutral-500 ${className}`}>
       <svg viewBox="0 0 64 64" width="70%" height="70%" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
         {shape}
       </svg>

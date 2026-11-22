@@ -4,11 +4,13 @@ import { plural } from "../lib/utils";
 export function LimitScreen({ app }) {
   const { sessionVariants, setScreen, settings } = app;
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-      <p className="text-[17px] font-semibold">На сьогодні генерації закінчились</p>
-      <p className="text-sm text-neutral-600">
-        Доступно {settings.gensPerDay} {plural(settings.gensPerDay, "генерація", "генерації", "генерацій")} на добу. Нові з’являться завтра. Варіанти, які вже є, можна
-        переглянути й надіслати студії.
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <h1 className="t-h2">
+        На сьогодні генерації закінчились
+      </h1>
+      <p className="t-body text-neutral-600">
+        Доступно {settings.gensPerDay} {plural(settings.gensPerDay, "генерація", "генерації", "генерацій")} на добу. Нові
+        з’являться завтра. Варіанти, які вже є, можна переглянути й надіслати студії.
       </p>
       <div className="mt-2 flex w-full flex-col gap-2">
         {sessionVariants.length > 0 && (

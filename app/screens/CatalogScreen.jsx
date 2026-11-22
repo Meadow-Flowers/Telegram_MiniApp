@@ -1,5 +1,5 @@
-import { Icon, I, Photo, Stepper, secondaryBtn, primaryBtn } from "../components/ui";
-import ZoomPhoto from "../components/Lightbox";
+import { Icon, I, Num, Tabs, secondaryBtn, primaryBtn } from "../components/ui";
+import CatalogCard from "../components/CatalogCard";
 import { flowersWord } from "../lib/utils";
 
 export function CatalogScreen({ app }) {
@@ -19,42 +19,49 @@ export function CatalogScreen({ app }) {
     visible,
   } = app;
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <label className="relative block">
+    <div className="flex flex-col gap-4 px-3 pb-6 pt-6">
+      <h1 className="t-h1">
+        Оберіть квіти
+      </h1>
+
+      <label className="relative block h-11 border border-forest">
         <span className="sr-only">Пошук за назвою</span>
-        <Icon d={I.search} size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+        <Icon d={I.search} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Пошук за назвою"
-          className="h-11 w-full rounded-xl border border-neutral-300 pl-10 pr-3 text-[15px] outline-none focus:border-neutral-900"
+          className="t-body h-full w-full rounded-none bg-transparent pl-11 pr-12 outline-none focus-visible:shadow-[inset_0_0_0_1px_var(--color-forest)]"
         />
+        {search && (
+          <button
+            type="button"
+            aria-label="Очистити пошук"
+            onClick={() => setSearch("")}
+            className="absolute right-0 top-0 flex h-full w-11 items-center justify-center border-l border-forest bg-transparent"
+          >
+            <Icon d={I.close} />
+          </button>
+        )}
       </label>
+
       {chipCats.length > 0 && (
-        <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4" role="group" aria-label="Категорії">
-          {[{ id: "all", name: "Усі" }, ...chipCats].map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={activeCat === c.id}
-              onClick={() => setCatFilter(c.id)}
-              className={`h-9 shrink-0 rounded-full border px-3.5 text-[13px] font-semibold ${
-                activeCat === c.id ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white"
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          label="Категорії"
+          items={[["all", "Усі"], ...chipCats.map((c) => [c.id, c.name])]}
+          value={activeCat}
+          onChange={setCatFilter}
+        />
       )}
-      <p className="text-[13px] text-neutral-600">
+
+      <p className="t-caption text-neutral-600">
         Не більше {settings.maxPerType} квітів одного виду і {settings.maxTotal} у букеті
       </p>
 
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-10 text-center">
-          <p className="text-sm text-neutral-600">
+          <p className="t-body text-neutral-600">
             {available.length === 0 ? "Сьогодні каталог порожній" : "Нічого не знайдено"}
           </p>
           {(q || activeCat !== "all") && (
@@ -71,47 +78,26 @@ export function CatalogScreen({ app }) {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {visible.map((f) => {
+        <div className="grid grid-cols-2 gap-x-0 gap-y-4">
+          {visible.map((f, i) => {
             const c = selection[f.id] || 0;
             const limit = maxFor(f);
             const totalFull = total >= settings.maxTotal;
-            let hint = `В наявності: ${f.stock} шт`;
-            if (c > 0 && c >= f.stock) hint = "Більше немає в наявності";
-            else if (c > 0 && c >= settings.maxPerType) hint = "Ліміт на один вид";
-            else if (totalFull && c === 0) hint = "Букет уже повний";
+            let warn = null;
+            if (c > 0 && c >= f.stock) warn = { text: "Більше немає в наявності" };
+            else if (c > 0 && c >= settings.maxPerType) warn = { text: "Ліміт на один вид" };
+            else if (totalFull && c === 0) warn = { text: "Букет уже повний" };
             return (
-              <div
+              <CatalogCard
                 key={f.id}
-                className={`flex flex-col gap-2 rounded-2xl p-2 ${
-                  c > 0 ? "border-2 border-neutral-900" : "m-px border border-neutral-200"
-                }`}
-              >
-                <ZoomPhoto url={f.photo} label={`Відкрити фото: ${f.name}`} className="aspect-[4/5] w-full rounded-xl" />
-                <div className="px-0.5">
-                  <div className="text-sm font-semibold">{f.name}</div>
-                  <div className="text-xs text-neutral-600">{hint}</div>
-                </div>
-                {c === 0 ? (
-                  <button
-                    type="button"
-                    className={secondaryBtn}
-                    disabled={totalFull}
-                    onClick={() => setCount(f.id, 1)}
-                  >
-                    Додати
-                  </button>
-                ) : (
-                  <Stepper
-                    dark
-                    label={f.name}
-                    value={c}
-                    onDec={() => setCount(f.id, c - 1)}
-                    onInc={() => setCount(f.id, c + 1)}
-                    incDisabled={c >= limit || totalFull}
-                  />
-                )}
-              </div>
+                flower={f}
+                count={c}
+                warn={warn}
+                totalFull={totalFull}
+                incDisabled={c >= limit || totalFull}
+                onSet={(n) => setCount(f.id, n)}
+                index={i}
+              />
             );
           })}
         </div>
@@ -121,16 +107,19 @@ export function CatalogScreen({ app }) {
 }
 
 export function CatalogFooter({ app }) {
-  const { format, setScreen, settings, total } = app;
+  const { setScreen, settings, total } = app;
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t border-neutral-200 bg-white px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
+    <div className="flex shrink-0 items-center gap-3 border-t border-forest bg-cream px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
       <div className="flex-1">
-        <div className="text-xs text-neutral-600">Обрано</div>
-        <div className="text-base font-semibold tabular-nums">
-          {total} / {settings.maxTotal} {flowersWord(settings.maxTotal)}
+        <div className="t-caption text-neutral-600">Обрано</div>
+        <div className="t-title tabular-nums">
+          <Num>
+            {total} / {settings.maxTotal}
+          </Num>{" "}
+          {flowersWord(settings.maxTotal)}
         </div>
       </div>
-      <button type="button" className={primaryBtn} disabled={total === 0} onClick={() => setScreen("format")}>
+      <button type="button" className={`${primaryBtn} min-w-36`} disabled={total === 0} onClick={() => setScreen("format")}>
         Далі
       </button>
     </div>
