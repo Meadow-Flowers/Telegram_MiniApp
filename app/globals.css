@@ -355,52 +355,56 @@ html:not(.is-touch) .btn-secondary:not(:disabled):active {
 @property --flow-a {
   syntax: "<percentage>";
   inherits: false;
-  initial-value: -20%;
+  initial-value: -10%;
 }
 @property --flow-b {
   syntax: "<percentage>";
   inherits: false;
-  initial-value: 120%;
+  initial-value: 110%;
 }
 @keyframes flow-a {
   to {
-    --flow-a: 120%;
+    --flow-a: 110%;
   }
 }
 @keyframes flow-b {
   to {
-    --flow-b: -20%;
+    --flow-b: -10%;
   }
 }
 .btn-flow {
   position: absolute;
-  inset: -12px;
+  inset: -16px;
   pointer-events: none;
-  /* Градієнти з багатьма проміжними точками (плавний спад без видимих меж), а зверху розмиття: смуг не видно */
+  /* Дві великі м'які плями: градієнти з багатьма проміжними точками (спад без видимих меж), зверху розмиття.
+     Рухаються повільно й плавно, без різких розворотів; при появі й зникненні кнопки плавно проявляються. */
   background:
     radial-gradient(
-      48% 190% at var(--flow-a) 50%,
-      rgb(195 135 56 / 0.5),
-      rgb(195 135 56 / 0.4) 12%,
-      rgb(195 135 56 / 0.26) 28%,
-      rgb(195 135 56 / 0.13) 46%,
-      rgb(195 135 56 / 0.05) 62%,
-      transparent 76%
+      60% 200% at var(--flow-a) 50%,
+      rgb(195 135 56 / 0.4),
+      rgb(195 135 56 / 0.33) 10%,
+      rgb(195 135 56 / 0.24) 24%,
+      rgb(195 135 56 / 0.14) 40%,
+      rgb(195 135 56 / 0.07) 56%,
+      rgb(195 135 56 / 0.02) 70%,
+      transparent 82%
     ),
     radial-gradient(
-      44% 190% at var(--flow-b) 50%,
-      rgb(176 214 188 / 0.34),
-      rgb(176 214 188 / 0.27) 12%,
-      rgb(176 214 188 / 0.17) 28%,
-      rgb(176 214 188 / 0.08) 46%,
-      rgb(176 214 188 / 0.03) 62%,
-      transparent 76%
+      56% 200% at var(--flow-b) 50%,
+      rgb(176 214 188 / 0.28),
+      rgb(176 214 188 / 0.23) 10%,
+      rgb(176 214 188 / 0.16) 24%,
+      rgb(176 214 188 / 0.09) 40%,
+      rgb(176 214 188 / 0.04) 56%,
+      rgb(176 214 188 / 0.01) 70%,
+      transparent 82%
     );
-  filter: blur(10px);
+  filter: blur(16px);
+  opacity: 1;
   animation:
-    flow-a 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate,
-    flow-b 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
-  transition: opacity 0.45s var(--ease);
+    flow-a 9s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate,
+    flow-b 12s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+  transition: opacity 0.9s var(--ease);
 }
 html:not(.is-touch) .btn-primary:not(:disabled):active .btn-flow {
   opacity: 0;
@@ -410,8 +414,16 @@ html:not(.is-touch) .btn-primary:not(:disabled):active .btn-flow {
     opacity: 0;
   }
 }
+/* Коли кнопка вимкнена, світіння не зникає різко, а плавно гасне (і так само проявляється, коли кнопка стає активною) */
 .btn-primary:disabled .btn-flow {
-  display: none;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-flow {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Графіки у вкладці «Статистика»: смужки виростають, лінії домальовуються, заливка й клітинки проявляються,
@@ -555,7 +567,6 @@ input[type="search"]::-webkit-search-decoration {
   .img-in,
   .result-zoom,
   .link-ul,
-  .btn-flow,
   .btn-roll {
     animation: none !important;
     transition: none !important;

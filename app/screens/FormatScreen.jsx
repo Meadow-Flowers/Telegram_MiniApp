@@ -146,10 +146,10 @@ export function FormatFooter({ app }) {
         size="md"
         colorVariant="gold"
         theme="dark"
-        strength={1}
-        brightness={2.6}
-        saturation={2}
-        duration={1.6}
+        strength={0.7}
+        brightness={1.7}
+        saturation={1.4}
+        duration={3.6}
         borderRadius={0}
         active={!!activeFormat}
       >
