@@ -81,7 +81,7 @@ function Viewer({ url, srcImg, actions, onClosed }) {
   });
 
   // де фото стоїть на екрані: усередині вільної області, з пропорціями оригіналу
-  const bottom = actions ? 104 : 24;
+  const bottom = actions ? 116 : 24;
   const availH = view.h - TOP - bottom;
   let fit = null;
   if (nat) {
@@ -232,7 +232,7 @@ function Viewer({ url, srcImg, actions, onClosed }) {
 
       {actions && (
         <div
-          className="absolute inset-x-0 bottom-0 grid grid-cols-2 gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+          className="absolute inset-x-0 bottom-0 grid grid-cols-2 gap-2 p-3 pb-[calc(1.5rem+var(--safe-bottom))]"
           style={ui}
         >
           {actions}

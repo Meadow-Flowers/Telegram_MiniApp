@@ -114,7 +114,7 @@ export function CatalogScreen({ app }) {
 export function CatalogFooter({ app }) {
   const { setScreen, settings, total } = app;
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t border-forest bg-cream px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
+    <div className="flex shrink-0 items-center gap-3 border-t border-forest bg-cream px-3 pb-safe pt-3">
       <div className="flex-1">
         <div className="t-caption text-neutral-600">Обрано</div>
         <div className="t-title tabular-nums">

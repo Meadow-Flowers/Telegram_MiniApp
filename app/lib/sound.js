@@ -1,11 +1,10 @@
-// Звуки інтерфейсу: тихий м'який «стук» при наведенні й клік при натисканні.
-// Файли з soundcn.xyz (набір Kenney, ліцензія CC0): public/sounds/hover.mp3 (Impact Soft Medium 003, світліший і тихіший)
-// і public/sounds/click.mp3 (Impact Soft Medium 001, нижчий і м'якший). Щоб змінити звук, замініть ці файли.
+// Звук інтерфейсу: тихий м'який «стук» при наведенні (звуку при натисканні немає, його прибрали).
+// Файл з soundcn.xyz (набір Kenney, ліцензія CC0): public/sounds/hover.mp3 (Impact Soft Medium 003). Щоб змінити звук, замініть файл.
 // Працює через одну пару слухачів на весь документ, тож у кожну кнопку нічого додавати не треба.
 // Звук наведення лише для миші (на телефоні наведення немає). Браузер не дає грати звук, доки
 // користувач нічого не натиснув, тому перший тік після відкриття сторінки може бути тихим.
-const FILES = { hover: "/sounds/hover.mp3", click: "/sounds/click.mp3" };
-const VOLUME = { hover: 0.22, click: 0.5 };
+const FILES = { hover: "/sounds/hover.mp3" };
+const VOLUME = { hover: 0.22 };
 const INTERACTIVE =
   'button, a[href], [role="button"], [role="switch"], label, summary, input[type="checkbox"], input[type="file"]';
 
@@ -80,22 +79,12 @@ export function installSounds() {
     lastHoverAt = now;
     play("hover");
   };
-  const onClick = (e) => {
-    wake();
-    if (!enabled()) return;
-    const el = e.target.closest?.(INTERACTIVE);
-    if (!el || isDisabled(el)) return;
-    play("click");
-  };
-
   document.addEventListener("pointerdown", wake, true);
   document.addEventListener("keydown", wake, true);
   document.addEventListener("pointerover", onOver, true);
-  document.addEventListener("click", onClick, true);
   return () => {
     document.removeEventListener("pointerdown", wake, true);
     document.removeEventListener("keydown", wake, true);
     document.removeEventListener("pointerover", onOver, true);
-    document.removeEventListener("click", onClick, true);
   };
 }

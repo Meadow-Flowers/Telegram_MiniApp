@@ -196,7 +196,7 @@ export function Onboarding({ app, onDone }) {
         <p className="t-body text-neutral-700">{SLIDES[i].text}</p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3 border-t border-forest px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
+      <div className="flex shrink-0 items-center gap-3 border-t border-forest px-3 pb-safe pt-3">
         <div className="flex gap-1.5" aria-hidden="true">
           {SLIDES.map((_, n) => (
             <span key={n} className={`h-2.5 w-2.5 border border-forest ${n === i ? "bg-forest" : ""}`} />

@@ -188,7 +188,7 @@ export function Sheet({ title, onClose, children }) {
             <Icon d={I.close} />
           </button>
         </div>
-        <div className="flex flex-col gap-3 overflow-y-auto px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-3">
+        <div className="flex flex-col gap-3 overflow-y-auto px-3 pb-[calc(2rem+var(--safe-bottom))] pt-3">
           {children}
         </div>
       </div>

@@ -81,6 +81,18 @@ html {
   background: var(--color-neutral-200);
 }
 
+/* Безпечний відступ знизу: заокруглені кути екрана телефону й смуга «додому» не обрізають кнопки.
+   Telegram дає свою змінну --tg-safe-area-inset-bottom, браузер iOS дає env(). Не менше 32 px. */
+:root {
+  --safe-bottom: max(
+    env(safe-area-inset-bottom, 0px),
+    var(--tg-safe-area-inset-bottom, 0px)
+  );
+}
+.pb-safe {
+  padding-bottom: max(2rem, calc(var(--safe-bottom) + 0.75rem));
+}
+
 body {
   margin: 0;
   background: var(--color-neutral-200);
@@ -239,40 +251,40 @@ input::placeholder {
   background-image: linear-gradient(var(--color-cream), var(--color-cream));
   color: var(--color-cream);
 }
-.btn-primary-inv:not(:disabled):active,
-.btn-secondary-inv:not(:disabled):active {
+html:not(.is-touch) .btn-primary-inv:not(:disabled):active,
+html:not(.is-touch) .btn-secondary-inv:not(:disabled):active {
   background-size: 100% 100%;
 }
-.btn-primary-inv:not(:disabled):active {
+html:not(.is-touch) .btn-primary-inv:not(:disabled):active {
   color: var(--color-cream);
 }
-.btn-secondary-inv:not(:disabled):active {
+html:not(.is-touch) .btn-secondary-inv:not(:disabled):active {
   color: var(--color-forest);
 }
 @media (hover: hover) {
-  .btn-primary-inv:not(:disabled):hover {
+  html:not(.is-touch) .btn-primary-inv:not(:disabled):hover {
     background-size: 100% 100%;
     color: var(--color-cream);
   }
-  .btn-secondary-inv:not(:disabled):hover {
+  html:not(.is-touch) .btn-secondary-inv:not(:disabled):hover {
     background-size: 100% 100%;
     color: var(--color-forest);
   }
 }
-.btn-primary:not(:disabled):active {
+html:not(.is-touch) .btn-primary:not(:disabled):active {
   background-size: 100% 100%;
   color: var(--color-forest);
 }
-.btn-secondary:not(:disabled):active {
+html:not(.is-touch) .btn-secondary:not(:disabled):active {
   background-size: 100% 100%;
   color: var(--color-cream);
 }
 @media (hover: hover) {
-  .btn-primary:not(:disabled):hover {
+  html:not(.is-touch) .btn-primary:not(:disabled):hover {
     background-size: 100% 100%;
     color: var(--color-forest);
   }
-  .btn-secondary:not(:disabled):hover {
+  html:not(.is-touch) .btn-secondary:not(:disabled):hover {
     background-size: 100% 100%;
     color: var(--color-cream);
   }
@@ -303,7 +315,7 @@ input::placeholder {
   }
 }
 @media (hover: hover) {
-  .link-btn:hover .link-ul {
+  html:not(.is-touch) .link-btn:hover .link-ul {
     animation: link-wipe 0.7s var(--ease);
   }
 }
@@ -331,8 +343,8 @@ input::placeholder {
 }
 /* Збільшення фото при наведенні діє лише на ту картку (.zoom-card), над якою курсор, а не на весь ряд */
 @media (hover: hover) {
-  .reveal.is-in .zoom-card:hover .card-img,
-  .reveal.is-in.zoom-card:hover .card-img {
+  html:not(.is-touch) .reveal.is-in .zoom-card:hover .card-img,
+  html:not(.is-touch) .reveal.is-in.zoom-card:hover .card-img {
     transform: scale(1.04);
     transition-delay: 0ms;
   }
@@ -390,11 +402,11 @@ input::placeholder {
     flow-b 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
   transition: opacity 0.45s var(--ease);
 }
-.btn-primary:not(:disabled):active .btn-flow {
+html:not(.is-touch) .btn-primary:not(:disabled):active .btn-flow {
   opacity: 0;
 }
 @media (hover: hover) {
-  .btn-primary:not(:disabled):hover .btn-flow {
+  html:not(.is-touch) .btn-primary:not(:disabled):hover .btn-flow {
     opacity: 0;
   }
 }
