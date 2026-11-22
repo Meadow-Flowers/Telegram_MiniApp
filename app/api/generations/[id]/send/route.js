@@ -12,7 +12,7 @@ export const POST = api(async ({ params, session }) => {
   const gen = check(
     await sb
       .from("generations")
-      .select("id, summary, image_path, sent_to_studio_at")
+      .select("id, summary, image_path, sent_to_studio_at, created_at")
       .eq("id", id)
       .eq("user_id", session.user.id)
       .maybeSingle(),
@@ -23,7 +23,13 @@ export const POST = api(async ({ params, session }) => {
   const chatId = process.env.STUDIO_CHAT_ID;
   if (!chatId) throw new HttpError(503, "Чат студії ще не налаштований");
 
-  const caption = `🌸 Варіант букета від клієнта\n${esc(gen.summary)}\n\nКлієнт: ${userLabel(session.user)}`.slice(0, 1024);
+  // старий варіант (зі «Мої букети»): вказуємо дату, бо наявність квітів за цей час могла змінитися
+  const ageMs = Date.now() - new Date(gen.created_at).getTime();
+  const dateLine =
+    ageMs > 6 * 3600_000
+      ? `\nЗгенеровано: ${new Date(gen.created_at).toLocaleDateString("uk-UA", { day: "numeric", month: "long", timeZone: "Europe/Kyiv" })}`
+      : "";
+  const caption = `🌸 Варіант букета від клієнта\n${esc(gen.summary)}${dateLine}\n\nКлієнт: ${userLabel(session.user)}`.slice(0, 1024);
   await botCall("sendPhoto", {
     chat_id: chatId,
     photo: photoUrl(gen.image_path),

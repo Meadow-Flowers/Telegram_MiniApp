@@ -11,21 +11,38 @@ export function ResultScreen({ app }) {
   const {
     active,
     activeVariant,
-    formatLabel,
+    cancelDraft,
+    currentSet,
+    compDraft,
+    draftDiff,
+    formatChanged,
     generate,
     gensLeft,
     isStaff,
     sessionVariants,
     setActive,
-    setScreen,
-    summary,
+    startEdit,
   } = app;
+  // склад і формат показуємо за картинкою, а не за поточним вибором у каталозі
+  const summary = currentSet.snapshot.summary;
+  const formatLabel = currentSet.snapshot.formatLabel;
   // квадратні кнопки-стрілки на фото, у тому ж стилі, що кнопка «ще варіант»
   const arrow =
     "absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-forest bg-cream transition-colors duration-300 active:bg-surface disabled:opacity-30";
   return (
     <div className="flex flex-col gap-6 px-3 pb-6 pt-6">
       <h1 className="t-h1">Ваш букет</h1>
+
+      {/* Чернетка: склад у каталозі змінено, а картинка ще стара */}
+      {compDraft && (
+        <div className="flex items-start gap-3 bg-sand/60 p-3" role="status">
+          <Icon d={I.info} className="shrink-0" />
+          <p className="t-caption">
+            Склад змінено, а картинка ще за старим складом. Змін нижче, у блоці
+            «Склад».
+          </p>
+        </div>
+      )}
 
       <div className="relative border border-forest">
         <div className="overflow-hidden">
@@ -97,18 +114,20 @@ export function ResultScreen({ app }) {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={generate}
-          className={`${secondaryBtn} flex items-center justify-center gap-2`}
-        >
-          <Icon d={I.refresh} />
-          {isStaff
-            ? "Ще варіант"
-            : gensLeft > 0
-              ? `Ще варіант · залишилось ${gensLeft}`
-              : "Ще варіант · ліміт вичерпано"}
-        </button>
+        {!compDraft && (
+          <button
+            type="button"
+            onClick={generate}
+            className={`${secondaryBtn} flex items-center justify-center gap-2`}
+          >
+            <Icon d={I.refresh} />
+            {isStaff
+              ? "Ще варіант"
+              : gensLeft > 0
+                ? `Ще варіант · залишилось ${gensLeft}`
+                : "Ще варіант · ліміт вичерпано"}
+          </button>
+        )}
       </Reveal>
 
       <Reveal
@@ -121,7 +140,7 @@ export function ResultScreen({ app }) {
           <button
             type="button"
             className={`${linkBtn} -my-3`}
-            onClick={() => setScreen("catalog")}
+            onClick={startEdit}
           >
             <span className="link-ul">Змінити склад</span>
           </button>
@@ -141,6 +160,41 @@ export function ResultScreen({ app }) {
         <p className="t-body border-t border-neutral-300 pt-3 text-neutral-700">
           {formatLabel}
         </p>
+
+        {/* Що змінено порівняно з цією картинкою */}
+        {compDraft && (
+          <div className="flex flex-col gap-3 border-t border-forest pt-3">
+            <h3 className="t-title">Зміни, яких ще немає на картинці</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {draftDiff.added.map((r) => (
+                <span key={r.id} className="t-caption border border-forest bg-forest px-2 py-1 text-cream">
+                  + {r.name} ×{r.count}
+                </span>
+              ))}
+              {draftDiff.changed.map((r) => (
+                <span key={r.id} className="t-caption border border-forest bg-sand px-2 py-1">
+                  {r.name} ×{r.from} → ×{r.to}
+                </span>
+              ))}
+              {draftDiff.removed.map((r) => (
+                <span key={r.id} className="t-caption border border-rust px-2 py-1 text-rust line-through">
+                  {r.name} ×{r.count}
+                </span>
+              ))}
+              {formatChanged && (
+                <span className="t-caption border border-forest bg-sand px-2 py-1">Змінено формат</span>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button type="button" className={primaryBtn} onClick={generate}>
+                {isStaff || gensLeft > 0 ? "Згенерувати зі змінами" : "Ліміт вичерпано"}
+              </button>
+              <button type="button" className={secondaryBtn} onClick={cancelDraft}>
+                Скасувати зміни
+              </button>
+            </div>
+          </div>
+        )}
       </Reveal>
 
       {/* Застереження: м'який жовтий блок із іконкою, щоб привернути увагу */}
@@ -163,7 +217,7 @@ export function ResultFooter({ app }) {
         type="button"
         className={primaryBtn}
         disabled={actionBusy}
-        onClick={sendToStudio}
+        onClick={() => sendToStudio()}
       >
         Надіслати студії
       </button>
@@ -172,11 +226,11 @@ export function ResultFooter({ app }) {
           type="button"
           className={secondaryBtn}
           disabled={actionBusy}
-          onClick={shareVariant}
+          onClick={() => shareVariant()}
         >
           Поділитися
         </button>
-        <button type="button" className={secondaryBtn} onClick={savePhoto}>
+        <button type="button" className={secondaryBtn} onClick={() => savePhoto()}>
           Зберегти фото
         </button>
       </div>

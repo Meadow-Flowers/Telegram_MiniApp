@@ -11,6 +11,7 @@ import ZoomPhoto from "./Lightbox";
 export default function CatalogCard({
   flower: f,
   count: c,
+  was,
   warn,
   totalFull,
   incDisabled,
@@ -48,6 +49,12 @@ export default function CatalogCard({
           >
             {warn ? warn.text : `В наявності: ${f.stock}`}
           </div>
+          {/* режим зміни складу: чим картка відрізняється від готового букета */}
+          {was !== undefined && was !== c && (
+            <div className="t-caption text-rust">
+              {was === 0 ? "Нова в букеті" : c === 0 ? `Прибрано, було ×${was}` : `Було ×${was}`}
+            </div>
+          )}
         </div>
 
         <span

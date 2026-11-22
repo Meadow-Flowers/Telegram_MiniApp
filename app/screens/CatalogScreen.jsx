@@ -7,6 +7,8 @@ export function CatalogScreen({ app }) {
     activeCat,
     available,
     chipCats,
+    currentSet,
+    editing,
     maxFor,
     q,
     search,
@@ -87,11 +89,14 @@ export function CatalogScreen({ app }) {
             if (c > 0 && c >= f.stock) warn = { text: "Більше немає в наявності" };
             else if (c > 0 && c >= settings.maxPerType) warn = { text: "Ліміт на один вид" };
             else if (totalFull && c === 0) warn = { text: "Букет уже повний" };
+            // у режимі зміни складу: скільки цієї квітки було в готовому букеті
+            const was = editing ? currentSet.snapshot.counts[f.id] || 0 : undefined;
             return (
               <CatalogCard
                 key={f.id}
                 flower={f}
                 count={c}
+                was={was}
                 warn={warn}
                 totalFull={totalFull}
                 incDisabled={c >= limit || totalFull}

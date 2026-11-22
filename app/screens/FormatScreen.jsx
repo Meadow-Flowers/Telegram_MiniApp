@@ -16,8 +16,10 @@ export function FormatScreen({ app }) {
     activeFormat,
     enabledFormats,
     formatGroups,
+    matchingIdx,
+    openMatching,
     pickOption,
-    sessionVariants,
+    sessions,
     setFormat,
     setScreen,
     summary,
@@ -109,17 +111,17 @@ export function FormatScreen({ app }) {
         </ul>
       </Reveal>
 
-      {sessionVariants.length > 0 && (
+      {matchingIdx >= 0 && (
         <Reveal delay={next()}>
           <button
             type="button"
-            onClick={() => setScreen("result")}
+            onClick={openMatching}
             className={`${secondaryBtn} flex h-auto! w-full items-center justify-between gap-3 py-3 text-left`}
           >
             <span>
               <span className="block">Згенеровані варіанти</span>
               <span className="t-caption block normal-case opacity-70">
-                {sessionVariants.length} для цього складу
+                {sessions[matchingIdx].variants.length} для цього складу
               </span>
             </span>
             <Icon d={I.next} />
@@ -157,7 +159,12 @@ export function FormatFooter({ app }) {
           disabled={!activeFormat}
           onClick={generate}
         >
-          <span aria-hidden="true" className="btn-flow" />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+          >
+            <span className="btn-flow" />
+          </span>
           <span className="relative">Згенерувати</span>
         </button>
       </BorderBeam>

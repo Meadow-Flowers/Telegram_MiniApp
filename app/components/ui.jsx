@@ -6,6 +6,7 @@ import {
   CaretLeft,
   CaretRight,
   Check,
+  FlowerLotus,
   Gear,
   Image as ImageIcon,
   MagnifyingGlass,
@@ -51,6 +52,7 @@ export const I = {
   chevronDown: CaretDown,
   refresh: ArrowsClockwise,
   check: Check,
+  flower: FlowerLotus,
   search: MagnifyingGlass,
 };
 

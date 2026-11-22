@@ -362,19 +362,29 @@ input::placeholder {
 }
 .btn-flow {
   position: absolute;
-  inset: 0;
+  inset: -12px;
   pointer-events: none;
+  /* Градієнти з багатьма проміжними точками (плавний спад без видимих меж), а зверху розмиття: смуг не видно */
   background:
     radial-gradient(
       48% 190% at var(--flow-a) 50%,
-      rgb(195 135 56 / 0.62),
-      transparent 72%
+      rgb(195 135 56 / 0.5),
+      rgb(195 135 56 / 0.4) 12%,
+      rgb(195 135 56 / 0.26) 28%,
+      rgb(195 135 56 / 0.13) 46%,
+      rgb(195 135 56 / 0.05) 62%,
+      transparent 76%
     ),
     radial-gradient(
       44% 190% at var(--flow-b) 50%,
-      rgb(176 214 188 / 0.42),
-      transparent 72%
+      rgb(176 214 188 / 0.34),
+      rgb(176 214 188 / 0.27) 12%,
+      rgb(176 214 188 / 0.17) 28%,
+      rgb(176 214 188 / 0.08) 46%,
+      rgb(176 214 188 / 0.03) 62%,
+      transparent 76%
     );
+  filter: blur(10px);
   animation:
     flow-a 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate,
     flow-b 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
@@ -547,4 +557,68 @@ input[type="search"]::-webkit-search-decoration {
 }
 .no-scrollbar {
   scrollbar-width: none;
+}
+
+/* ---------- Онбординг: 3D-картки ----------
+   Сцена нахиляється за пальцем (змінні --rx/--ry ставить скрипт), а всередині тихо «дихає». Картки стоять на різній
+   глибині (translateZ), тож при нахилі між ними виникає паралакс. */
+.ob-stage {
+  perspective: 900px;
+  perspective-origin: 50% 40%;
+}
+.ob-tilt {
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease);
+}
+.ob-tilt.is-dragging {
+  transition: transform 0.08s linear;
+}
+.ob-float {
+  transform-style: preserve-3d;
+  animation: ob-float 7s ease-in-out infinite;
+}
+@keyframes ob-float {
+  0%,
+  100% {
+    transform: rotateX(3deg) rotateY(-5deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(-3deg) rotateY(5deg) translateY(-6px);
+  }
+}
+.ob-card {
+  position: absolute;
+  background: var(--color-cream);
+  border: 1px solid var(--color-forest);
+  transform-style: preserve-3d;
+  transform: translateZ(var(--z, 0px)) rotateZ(var(--rz, 0deg));
+}
+/* підпис і галочка трохи вище за саму картку, щоб відчувалась глибина */
+.ob-card > .ob-pop {
+  transform: translateZ(18px);
+}
+/* кожен екран з'являється з легким підйомом */
+@keyframes ob-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ob-in {
+  animation: ob-in 0.6s var(--ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob-float,
+  .ob-in {
+    animation: none !important;
+  }
+  .ob-tilt {
+    transition: none !important;
+    transform: none !important;
+  }
 }
