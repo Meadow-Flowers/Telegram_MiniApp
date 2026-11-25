@@ -5,7 +5,7 @@ import { str, uuid } from "../../../lib/server/validate";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
-const MAX_STYLE_REFS = 10;
+const MAX_STYLE_REFS = 20;
 // куди прив'язується фото: квітка, варіант формату (форма, колір) або сам формат
 const TABLES = { flower: "flowers", option: "format_options", format: "formats" };
 const idOf = (kind, raw) => (kind === "format" ? str(raw, { max: 20, label: "Формат" }) : uuid(raw));

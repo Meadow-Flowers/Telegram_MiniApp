@@ -26,7 +26,8 @@ export async function loadCatalog() {
       .select("id, group_id, parent_id, name, enabled, photo_path, sort, created_at")
       .order("sort")
       .order("created_at"),
-    sb.from("style_refs").select("id, format_id, photo_path, sort, created_at").order("sort").order("created_at"),
+    // "*": щоб каталог працював і до виконання міграції 0008 (позначки стилю з'являються після неї)
+    sb.from("style_refs").select("*").order("sort").order("created_at"),
     sb.from("settings").select("max_per_type, max_total, gens_per_day, generation_cost").eq("id", 1).single(),
   ]);
 
@@ -66,7 +67,13 @@ export async function loadCatalog() {
     refs: Object.fromEntries(
       formatsData.map((fm) => [
         fm.id,
-        refsData.filter((r) => r.format_id === fm.id).map((r) => ({ id: r.id, url: photoUrl(r.photo_path) })),
+        refsData.filter((r) => r.format_id === fm.id).map((r) => ({
+          id: r.id,
+          url: photoUrl(r.photo_path),
+          size: r.size ?? null, // small | large
+          optionId: r.option_id ?? null, // форма: id варіанта (Циліндр, Овал, Круг…)
+          skip: Boolean(r.skip), // не використовувати в генерації
+        })),
       ]),
     ),
     settings: {

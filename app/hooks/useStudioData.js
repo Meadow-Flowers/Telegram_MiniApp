@@ -268,6 +268,14 @@ export function useStudioData({ onError } = {}) {
       return ref;
     });
 
+  // позначки фото: { size, optionId, skip }; показуємо одразу, зберігаємо на сервері
+  const updateStyleRef = (formatId, id, patch) => {
+    setRefs((r) => ({ ...r, [formatId]: (r[formatId] || []).map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+    attempt(() => apiFetch(`/api/admin/style-refs/${id}`, { method: "PATCH", json: patch })).then((r) => {
+      if (r === null) load({ silent: true });
+    });
+  };
+
   const removeStyleRef = (formatId, id) => {
     setRefs((r) => ({ ...r, [formatId]: (r[formatId] || []).filter((x) => x.id !== id) }));
     attempt(() => apiFetch(`/api/admin/style-refs/${id}`, { method: "DELETE" })).then((r) => {
@@ -310,6 +318,7 @@ export function useStudioData({ onError } = {}) {
     setOptionPhoto,
     addStyleRef,
     removeStyleRef,
+    updateStyleRef,
     updateSettings,
   };
 }

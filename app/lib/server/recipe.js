@@ -70,6 +70,6 @@ export function recipeImages(catalog, recipe) {
   if (format && format.groups.length === 0 && format.photo) {
     container.push({ group: "format", label: format.name, url: format.photo });
   }
-  const styles = (catalog.refs?.[recipe.format.id] || []).map((r) => r.url).filter(Boolean);
+  const styles = (catalog.refs?.[recipe.format.id] || []).filter((r) => !r.skip).map((r) => r.url).filter(Boolean);
   return { flowers, container, styles };
 }
