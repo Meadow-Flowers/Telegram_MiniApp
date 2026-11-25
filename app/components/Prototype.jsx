@@ -571,6 +571,8 @@ export default function Prototype() {
                 <Icon d={I.back} />
               </button>
             )}
+            {/* У працівника на «Моїх букетах» логотипу немає: його місце займає кнопка з підписом */}
+            {!(isStaff && screen === "mine") && (
             <div className="corners cn-all flex min-w-0 flex-1 items-center justify-center">
               {screen === "admin" ? (
                 <h1 className="t-button">Адмінка</h1>
@@ -583,15 +585,25 @@ export default function Prototype() {
                 />
               )}
             </div>
+            )}
             {ready && screen !== "admin" && screen !== "loading" && (
+              // Клієнт: іконка з підписом «Мої букети». Працівник: лише іконка (місця мало), а на самій вкладці логотип
+              // зникає, і кнопка з підписом займає його місце
               <button
                 type="button"
                 aria-label="Мої букети"
                 onClick={openMine}
                 aria-pressed={screen === "mine"}
-                className={`relative flex w-12 shrink-0 items-center justify-center border-l border-forest ${screen === "mine" ? "bg-forest text-cream" : ""}`}
+                className={`t-button relative flex items-center justify-center gap-2 ${
+                  isStaff && screen === "mine"
+                    ? "min-w-0 flex-1 px-3"
+                    : isStaff
+                      ? "w-12 shrink-0 border-l border-forest"
+                      : "shrink-0 border-l border-forest px-3"
+                } ${screen === "mine" ? "bg-forest text-cream" : ""}`}
               >
                 <Icon d={I.flower} />
+                {(!isStaff || screen === "mine") && <span>Мої букети</span>}
               </button>
             )}
             {ready && isStaff && screen !== "admin" && screen !== "loading" && (
