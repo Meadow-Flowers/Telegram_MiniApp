@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Icon, I, InfoHead, Num, Photo } from "../../components/ui";
+import { Icon, I, InfoHead, Num } from "../../components/ui";
+import ZoomPhoto from "../../components/Lightbox";
 import { resizeImage } from "../../lib/image";
 
 const MAX_REFS = 10;
@@ -46,7 +47,12 @@ export function AdminStyleTab({ app }) {
             <div className="grid grid-cols-3 gap-2">
               {list.map((r, i) => (
                 <div key={r.id} className="relative">
-                  <Photo url={r.url} className="aspect-square w-full" />
+                  {/* тап по фото відкриває його на весь екран; хрестик видалення лежить поверх */}
+                  <ZoomPhoto
+                    url={r.url}
+                    label={`Відкрити фото ${i + 1}: ${fm.name}`}
+                    className="aspect-square w-full"
+                  />
                   <button
                     type="button"
                     aria-label={`Видалити фото ${i + 1}: ${fm.name}`}
