@@ -48,6 +48,25 @@ export default function Prototype() {
     loadLoadingScreen();
   }, []);
 
+  // Поки на телефоні відкрита клавіатура (фокус у полі введення), нижні панелі ховаємо: вони не потрібні й займають
+  // місце над клавіатурою. На десктопі нічого не ховаємо.
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const phone = window.matchMedia("(max-width: 639px)");
+    const isField = (el) =>
+      el instanceof HTMLElement &&
+      el.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="button"]), textarea');
+    const onIn = (e) => phone.matches && isField(e.target) && setTyping(true);
+    // при переході з одного поля в інше фокус на мить зникає, тож дивимось, що в фокусі після паузи
+    const onOut = () => setTimeout(() => setTyping(isField(document.activeElement) && phone.matches), 60);
+    document.addEventListener("focusin", onIn);
+    document.addEventListener("focusout", onOut);
+    return () => {
+      document.removeEventListener("focusin", onIn);
+      document.removeEventListener("focusout", onOut);
+    };
+  }, []);
+
   const [screen, setScreen] = useState("catalog"); // catalog | format | loading | result | limit | mine | admin
   const [counts, setCounts] = useState({});
   const [format, setFormat] = useState("box");
@@ -611,16 +630,20 @@ export default function Prototype() {
         </div>
 
         {/* Нижні панелі */}
-        {ready && screen === "admin" && admin.adminTab === "catalog" && (
-          <AdminFooter app={app} />
-        )}
-        {ready && editing && (screen === "catalog" || screen === "format") && (
-          <EditStrip app={app} />
-        )}
-        {ready && screen === "catalog" && <CatalogFooter app={app} />}
-        {ready && screen === "format" && <FormatFooter app={app} />}
-        {ready && screen === "result" && activeVariant && (
-          <ResultFooter app={app} />
+        {!typing && (
+          <>
+            {ready && screen === "admin" && admin.adminTab === "catalog" && (
+              <AdminFooter app={app} />
+            )}
+            {ready && editing && (screen === "catalog" || screen === "format") && (
+              <EditStrip app={app} />
+            )}
+            {ready && screen === "catalog" && <CatalogFooter app={app} />}
+            {ready && screen === "format" && <FormatFooter app={app} />}
+            {ready && screen === "result" && activeVariant && (
+              <ResultFooter app={app} />
+            )}
+          </>
         )}
 
         {ready && onboarding && screen !== "admin" && (

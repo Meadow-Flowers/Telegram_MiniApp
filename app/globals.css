@@ -123,6 +123,23 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Поля введення: темно-зелений курсор (на телефоні з темною темою Telegram він міг бути білим), світла схема форм
+   і розмір тексту не менше 16 px на телефоні, інакше iOS при фокусі збільшує сторінку («зумить» додаток). */
+:root {
+  color-scheme: light;
+}
+input,
+textarea {
+  caret-color: var(--color-forest);
+}
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 input::placeholder {
   color: var(--color-neutral-600);
   opacity: 1;
