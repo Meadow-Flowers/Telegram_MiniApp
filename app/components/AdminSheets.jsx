@@ -131,7 +131,9 @@ export function AdminSheets({ app }) {
 function StyleSheetBody({ fmt, photo, onChange, onDone }) {
   const shapeGroup = fmt.groups.find((g) => g.key === "shape" || g.key === "form");
   const shapes = shapeGroup?.items || [];
-  const sizes = fmt.id === "wrap" ? [["small", "Малий"], ["large", "Великий"]] : [];
+  const sizes = [["small", "Малий"], ["large", "Великий"]];
+  // в упаковки розмір обов'язковий, у коробки й кошика необов'язковий: просто допомагає підібрати фото під кількість квітів
+  const sizeRequired = fmt.id === "wrap";
   const chip = (on) =>
     `t-caption h-10 border border-forest px-3 transition-colors duration-300 ${on ? "bg-forest text-cream" : "bg-transparent active:bg-surface"}`;
   return (
@@ -156,7 +158,7 @@ function StyleSheetBody({ fmt, photo, onChange, onDone }) {
       )}
       {sizes.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="t-caption text-neutral-600">Розмір</span>
+          <span className="t-caption text-neutral-600">{sizeRequired ? "Розмір" : "Розмір (необов'язково)"}</span>
           <div className="flex flex-wrap gap-2">
             {sizes.map(([key, name]) => (
               <button
@@ -170,7 +172,10 @@ function StyleSheetBody({ fmt, photo, onChange, onDone }) {
               </button>
             ))}
           </div>
-          <span className="t-caption text-neutral-600">Малий: букет до 9 квітів, великий: від 10.</span>
+          <span className="t-caption text-neutral-600">
+            Малий: букет до 9 квітів, великий: від 10.
+            {!sizeRequired && " Якщо розмір вказано, великі букети отримають велику коробку, а малі малу."}
+          </span>
         </div>
       )}
       <button type="button" className={primaryBtn} onClick={onDone}>

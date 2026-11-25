@@ -10,7 +10,6 @@ import {
   setDevRole,
 } from "../lib/api";
 import { checkRecipe, diffSummary, getFormatChoice, sizeFor } from "../lib/utils";
-import { installSounds } from "../lib/sound";
 import { useStudioData } from "../hooks/useStudioData";
 import { useAdminUi } from "../hooks/useAdminUi";
 import { Icon, I, Sheet, primaryBtn, secondaryBtn } from "./ui";
@@ -44,8 +43,7 @@ export default function Prototype() {
   // перемикач ролі лише для локальної розробки (у Telegram роль визначає сервер за Telegram ID)
   const [devRole, setDevRoleState] = useState(getDevRole());
 
-  // звуки наведення й кліку на всіх кнопках (app/lib/sound.js)
-  useEffect(() => installSounds(), []);
+  // Звуків у додатку немає (раніше був тихий звук наведення мишки на десктопі, його вимкнено)
   useEffect(() => {
     loadLoadingScreen();
   }, []);
@@ -367,6 +365,7 @@ export default function Prototype() {
     if (matchingIdx < 0) return;
     setSetIdx(matchingIdx);
     setActive(sets[matchingIdx].variants.length - 1);
+    setEditMode(false);
     setScreen("result");
   };
 
@@ -394,7 +393,12 @@ export default function Prototype() {
   };
 
   const goBack = () => {
-    if (screen === "catalog") setScreen("result"); // режим зміни складу
+    if (screen === "catalog") {
+      // «← До результату» з режиму зміни складу: повертаємось один раз і виходимо з режиму,
+      // інакше стрілка лишалась би на каталозі й можна було ходити по колу результат → формат → каталог → результат
+      setEditMode(false);
+      setScreen("result");
+    }
     else if (screen === "format") setScreen("catalog");
     else if (screen === "result") setScreen("format");
     else if (screen === "limit")
@@ -472,8 +476,8 @@ export default function Prototype() {
   /* ================================================================ */
 
   return (
-    <main className="flex min-h-dvh items-center justify-center p-0 sm:p-6">
-      <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream pt-[env(safe-area-inset-top)] sm:h-[844px] sm:w-[390px] sm:border sm:border-forest">
+    <main className="flex items-center justify-center p-0 sm:min-h-dvh sm:p-6">
+      <div className="app-frame relative flex w-full flex-col overflow-hidden bg-cream pt-[env(safe-area-inset-top)] sm:w-[390px] sm:border sm:border-forest">
         {/* Перемикач ролі: лише для локальної розробки, у Telegram його немає */}
         {IS_DEV && (
           <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-dashed border-neutral-400 bg-neutral-100 px-3 py-2">
@@ -585,7 +589,7 @@ export default function Prototype() {
         </header>
 
         {/* Контент */}
-        <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div key={ready ? screen : "status"} className="screen-in h-full">
             {!ready && (
               <StatusScreen

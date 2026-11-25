@@ -89,7 +89,7 @@ export function LoadingScreen({ app }) {
       };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-6 overflow-y-auto px-3 py-6 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-6 overflow-y-auto overscroll-contain px-3 py-6 text-center">
       <div className="w-full" style={cardStyle}>
         <ImageGeneration
           ref={fx}

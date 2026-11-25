@@ -93,6 +93,26 @@ html {
   padding-bottom: max(2rem, calc(var(--safe-bottom) + 0.75rem));
 }
 
+/* Телефон: сторінка не прокручується, рухається лише внутрішній список. Висоту вікна беремо в Telegram
+   (--tg-viewport-stable-height), а якщо його немає, в dvh. Без цього на телефоні в якийсь момент їхав увесь додаток
+   разом із шапкою й нижньою панеллю, а список не прокручувався (ланцюжок скролу «підхоплював» сторінку). */
+.app-frame {
+  height: var(--tg-viewport-stable-height, 100dvh);
+}
+@media (max-width: 639px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+@media (min-width: 640px) {
+  .app-frame {
+    height: 844px;
+  }
+}
+
 body {
   margin: 0;
   background: var(--color-neutral-200);

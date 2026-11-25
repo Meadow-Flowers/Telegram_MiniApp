@@ -52,7 +52,8 @@ const EVENT_KEY = {
 };
 
 // Список діб від найстарішої до сьогодні: [{ d: "2026-11-22", g, s, sh, sv, l, c }]
-//   g генерацій, s надіслано студії, sh поширено, sv збережено, l випадки ліміту, c вартість, $
+//   g генерацій, s надіслано студії, sh поширено, sv збережено, l випадки ліміту, c вартість, $,
+//   n скільки з генерацій мають реальну вартість (у заглушок її нема): на це ділимо, щоб знайти ціну одного фото
 function emptyDays() {
   const today = dayFmt.format(new Date()); // YYYY-MM-DD за Києвом
   const [y, m, d] = today.split("-").map(Number);
@@ -66,6 +67,7 @@ function emptyDays() {
       sv: 0,
       l: 0,
       c: 0,
+      n: 0,
     };
   });
 }
@@ -101,6 +103,7 @@ async function chartData(sb) {
     if (!day) return;
     day.g += 1;
     day.c += Number(g.cost) || 0;
+    if (g.cost != null) day.n += 1;
     const parts = hourFmt.formatToParts(new Date(g.created_at));
     const wd = WEEKDAY[parts.find((p) => p.type === "weekday")?.value];
     const hour = Number(parts.find((p) => p.type === "hour")?.value);

@@ -52,17 +52,18 @@ export function buildRecipe(catalog, input) {
 }
 
 // Підбирає фото-шаблон зі вкладки «Стиль» під вибір клієнта: той самий формат і форма (коробка: циліндр, квадрат, овал;
-// упаковка: круг, трикутник), для упаковки ще й розмір (S → малий, M і L → великий). Якщо кілька фото підходять,
-// береться випадкове. Повертає null, якщо підходящого немає (тоді працює запасний шлях: малювання з нуля).
+// упаковка: круг, трикутник). Розмір (S → малий, M і L → великий) бажаний у всіх форматів: якщо серед фото потрібної
+// форми є з такою позначкою розміру, беремо їх, інакше будь-які. Якщо кілька фото підходять, береться випадкове.
+// Повертає null, якщо підходящого немає (тоді працює запасний шлях: малювання з нуля).
 export function pickTemplate(catalog, recipe) {
   const list = (catalog.refs?.[recipe.format.id] || []).filter((r) => !r.skip && r.url);
   if (list.length === 0) return null;
   const shape = recipe.options.find((o) => o.group === "shape" || o.group === "form");
-  const wantSize = recipe.format.id === "wrap" ? (recipe.size === "S" ? "small" : "large") : null;
+  const wantSize = recipe.size === "S" ? "small" : "large";
   // форма обов'язкова (інакше модель збереже чужу форму), розмір бажаний
   const byShape = shape ? list.filter((r) => r.optionId === shape.id) : list;
   if (byShape.length === 0) return null;
-  const exact = wantSize ? byShape.filter((r) => r.size === wantSize) : byShape;
+  const exact = byShape.filter((r) => r.size === wantSize);
   const pool = exact.length > 0 ? exact : byShape;
   const t = pool[Math.floor(Math.random() * pool.length)];
   return { id: t.id, url: t.url, size: t.size ?? null };

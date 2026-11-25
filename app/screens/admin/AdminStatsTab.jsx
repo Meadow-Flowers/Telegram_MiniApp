@@ -49,6 +49,7 @@ function demoStats() {
       sv,
       l,
       c: Math.round(g * 0.067 * 10000) / 10000,
+      n: g,
     };
   });
   const heat = Array.from({ length: 7 }, (_, d) =>
@@ -122,6 +123,15 @@ export function AdminStatsTab() {
   const prev = n * 2 <= data.days.length ? data.days.slice(-n * 2, -n) : null; // з попереднім періодом порівнюємо, лише якщо він є
   const hasCost = data.days.some((d) => d.c > 0);
 
+  // Середня вартість одного фото за період: витрати ділимо на кількість генерацій із реальною вартістю
+  // (генерації із заглушкою вартості не мають, тому їх не рахуємо)
+  const avgCost = (rows) => {
+    const count = sum(rows, "n");
+    return count > 0 ? sum(rows, "c") / count : null;
+  };
+  const avgNow = avgCost(cur);
+  const avgPrev = prev ? avgCost(prev) : null;
+
   // Плитка: підпис і відсоток зміни вгорі, число в лівому нижньому куті, міні-графік у правому
   const tile = (label, key, format = (v) => v) => {
     const now = sum(cur, key);
@@ -189,6 +199,23 @@ export function AdminStatsTab() {
         {tile("Витрати на генерації", "c", (v) =>
           hasCost ? `$${v.toFixed(2)}` : "—",
         )}
+        <div className="flex min-h-28 flex-col justify-between gap-3 bg-surface p-3">
+          <div className="flex items-start justify-between gap-2">
+            <span className="t-caption text-neutral-600">
+              Вартість одного фото
+            </span>
+            <Delta now={avgNow ?? 0} prev={avgNow != null ? avgPrev : null} />
+          </div>
+          <div className="flex items-end justify-between gap-2">
+            <span className="t-number shrink-0">
+              {avgNow != null ? `$${avgNow.toFixed(3)}` : "—"}
+            </span>
+            <Sparkline
+              values={cur.map((d) => (d.n > 0 ? (d.c / d.n) * 100 : 0))}
+              className="min-w-0 flex-1 text-forest"
+            />
+          </div>
+        </div>
       </div>
 
       <Reveal>
@@ -245,7 +272,9 @@ export function AdminStatsTab() {
       {!demo && data.realCost != null && (
         <p className="t-caption text-neutral-600">
           Витрати за весь час: ${data.realCost.toFixed(2)} за{" "}
-          {data.realCostCount} генерацій із реальною моделлю (дані від OpenAI).
+          {data.realCostCount} генерацій із реальною моделлю (дані від OpenAI),
+          у середньому ${(data.realCost / data.realCostCount).toFixed(3)} за
+          одне фото.
           Генерації із заглушкою не рахуються.
         </p>
       )}

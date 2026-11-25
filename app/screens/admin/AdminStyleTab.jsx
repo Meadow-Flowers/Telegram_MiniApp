@@ -49,8 +49,8 @@ export function AdminStyleTab({ app }) {
       {formats.map((fm) => {
         const list = refs[fm.id] || [];
         const shapes = fm.groups.find((g) => SHAPE_KEYS.includes(g.key))?.items || [];
-        const needsSize = fm.id === "wrap"; // розмір позначаємо лише для упаковки
-        const tagged = shapes.length > 0 || needsSize; // чи є що налаштовувати в цього формату
+        const needsSize = fm.id === "wrap"; // розмір обов'язковий лише для упаковки; у коробки й кошика він необов'язковий
+        const tagged = shapes.length > 0 || needsSize; // чи є що вимагати (підказки «не розмічено» і «ще немає»)
 
         // комбінації, під які ще немає жодного фото
         const missing = [];
@@ -95,23 +95,21 @@ export function AdminStyleTab({ app }) {
                     }}
                     onError={showToast}
                   />
-                  {tagged && (
-                    <div className="flex items-center justify-between gap-2 border-t border-forest p-1.5 pl-2.5">
-                      <span className={`t-caption min-w-0 truncate ${isTagged(r) ? "text-neutral-700" : "text-rust"}`}>
-                        {isTagged(r)
-                          ? [shapeName(r), needsSize ? SIZES.find(([k]) => k === r.size)?.[1] : null].filter(Boolean).join(" · ")
-                          : "Не розмічено"}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={`Налаштувати фото ${i + 1}: ${fm.name}`}
-                        onClick={() => setStyleEdit({ fmtId: fm.id, id: r.id })}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center border border-forest transition-colors duration-300 active:bg-surface"
-                      >
-                        <Icon d={I.edit} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between gap-2 border-t border-forest p-1.5 pl-2.5">
+                    <span className={`t-caption min-w-0 truncate ${tagged && !isTagged(r) ? "text-rust" : "text-neutral-700"}`}>
+                      {tagged && !isTagged(r)
+                        ? "Не розмічено"
+                        : [shapeName(r), SIZES.find(([k]) => k === r.size)?.[1]].filter(Boolean).join(" · ") || "Без позначок"}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Налаштувати фото ${i + 1}: ${fm.name}`}
+                      onClick={() => setStyleEdit({ fmtId: fm.id, id: r.id })}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center border border-forest transition-colors duration-300 active:bg-surface"
+                    >
+                      <Icon d={I.edit} />
+                    </button>
+                  </div>
                 </div>
               ))}
               {list.length < MAX_REFS && (
