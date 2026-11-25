@@ -16,7 +16,14 @@ export function AdminSheets({ app }) {
     setDraft,
     setEditFlower,
     setOptDraft,
+    formats,
+    refs,
+    setStyleEdit,
+    styleEdit,
+    updateStyleRef,
   } = app;
+  const styleFmt = styleEdit && formats.find((f) => f.id === styleEdit.fmtId);
+  const styleRef = styleEdit && (refs[styleEdit.fmtId] || []).find((r) => r.id === styleEdit.id);
   return (
     <>
       {addOpen && (
@@ -109,6 +116,66 @@ export function AdminSheets({ app }) {
           </button>
         </Sheet>
       )}
+
+      {/* Налаштування референсного фото: форма (коробка, упаковка) і розмір (лише упаковка) */}
+      {styleEdit && styleFmt && styleRef && (
+        <Sheet title="Налаштування фото" onClose={() => setStyleEdit(null)}>
+          <StyleSheetBody fmt={styleFmt} photo={styleRef} onChange={(patch) => updateStyleRef(styleFmt.id, styleRef.id, patch)} onDone={() => setStyleEdit(null)} />
+        </Sheet>
+      )}
+    </>
+  );
+}
+
+// Вміст шторки «Налаштування фото». Зміни зберігаються одразу, «Готово» лише закриває шторку.
+function StyleSheetBody({ fmt, photo, onChange, onDone }) {
+  const shapeGroup = fmt.groups.find((g) => g.key === "shape" || g.key === "form");
+  const shapes = shapeGroup?.items || [];
+  const sizes = fmt.id === "wrap" ? [["small", "Малий"], ["large", "Великий"]] : [];
+  const chip = (on) =>
+    `t-caption h-10 border border-forest px-3 transition-colors duration-300 ${on ? "bg-forest text-cream" : "bg-transparent active:bg-surface"}`;
+  return (
+    <>
+      {shapes.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="t-caption text-neutral-600">Форма</span>
+          <div className="flex flex-wrap gap-2">
+            {shapes.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                aria-pressed={photo.optionId === s.id}
+                className={chip(photo.optionId === s.id)}
+                onClick={() => onChange({ optionId: photo.optionId === s.id ? null : s.id })}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {sizes.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="t-caption text-neutral-600">Розмір</span>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map(([key, name]) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={photo.size === key}
+                className={chip(photo.size === key)}
+                onClick={() => onChange({ size: photo.size === key ? null : key })}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+          <span className="t-caption text-neutral-600">Малий: букет до 9 квітів, великий: від 10.</span>
+        </div>
+      )}
+      <button type="button" className={primaryBtn} onClick={onDone}>
+        Готово
+      </button>
     </>
   );
 }

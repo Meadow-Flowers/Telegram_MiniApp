@@ -15,6 +15,7 @@ export function useAdminUi({ data, showToast }) {
   const [editFlower, setEditFlower] = useState(null); // { id, name, cat } — шторка редагування квітки (назва й категорія)
   const [catManage, setCatManage] = useState(false); // режим видалення категорій
   const [catDelete, setCatDelete] = useState(null); // id категорії, яку збираються видалити
+  const [styleEdit, setStyleEdit] = useState(null); // { fmtId, id } — шторка налаштувань фото у вкладці «Стиль»
   const [saving, setSaving] = useState(false); // іде збереження в шторці
 
   const closeFlowerSheets = () => {
@@ -121,6 +122,8 @@ export function useAdminUi({ data, showToast }) {
     setCatManage,
     catDelete,
     setCatDelete,
+    styleEdit,
+    setStyleEdit,
     saving,
     closeFlowerSheets,
     openAdd,

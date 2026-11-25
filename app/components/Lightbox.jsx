@@ -253,6 +253,7 @@ export default function ZoomPhoto({
   onPick,
   onRemove,
   onError,
+  badge = true, // позначка камери на фото, коли його можна змінити; у картках з власною кнопкою редагування вимикаємо
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -344,7 +345,7 @@ export default function ZoomPhoto({
           iconSize={iconSize}
         />
         {/* позначка «фото можна змінити»: тап по фото відкриває переглядач із «Замінити» і «Видалити» */}
-        {url && hasActions && (
+        {url && hasActions && badge && (
           <span className="pointer-events-none absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center bg-forest text-cream">
             <Icon d={I.camera} />
           </span>
