@@ -71,6 +71,7 @@ const OPENAI_URL = process.env.OPENAI_IMAGES_URL || "https://api.openai.com/v1/i
 const MAX_INPUT_IMAGES = 16; // ліміт API
 const MAX_FLOWER_IMAGES = 13; // решта місць: форма/папір і колаж стилю
 const INPUT_SIDE = 768; // вхідні фото зменшуємо: менше токенів, швидше
+const TEMPLATE_SIDE = 1024; // фото-шаблон береться більшим: з нього модель зберігає фон, упаковку, руки
 const REQUEST_TIMEOUT_MS = 270_000;
 
 // $ за 1 млн токенів (сторінка цін OpenAI, сімейство gpt-image-2.x). Для інших моделей вартість не рахуємо.
@@ -78,6 +79,17 @@ const PRICES = { imageIn: 8, textIn: 5, imageOut: 30 };
 
 const FORMAT_EN = { box: "Box", basket: "Basket", wrap: "Wrapped bouquet (paper wrap)" };
 const OPTION_EN = { format: "Container", shape: "Shape", shapeChild: "Color", color: "Paper color", form: "Composition shape" };
+// Підказки розташування квітів: для «Ще варіант» кожного разу береться випадкова, щоб композиція не повторювалась
+const ARRANGEMENTS = [
+  "largest blooms near the centre, smaller flowers and buds towards the edges",
+  "each variety grouped in loose clusters with soft colour blocking",
+  "evenly mixed, no two identical flowers touching",
+  "asymmetric, flowing slightly to one side with the tallest stems at the back",
+  "compact and rounded, with a few taller airy stems rising out of the top",
+  "layered and cascading, with some stems lower over the front edge",
+];
+const pickRandom = (list) => list[Math.floor(Math.random() * list.length)];
+
 // Орієнтовні розміри: підігнати за реальними букетами студії
 const SIZE_EN = {
   S: "small, about 20-25 cm across",
@@ -147,7 +159,17 @@ function buildPrompt(template, recipe, imageLines) {
     SIZE: SIZE_EN[recipe.size] || recipe.size,
     FLOWER_COUNT: String(recipe.flowers.length),
     TOTAL_STEMS: String(recipe.total),
+    ARRANGEMENT: pickRandom(ARRANGEMENTS),
   });
+}
+
+// Розмір картинки на виході під пропорції фото-шаблона; запасні варіанти на випадок, якщо модель якийсь не приймає
+function outputSizes(width, height) {
+  const r = width / height;
+  if (r < 0.7) return ["1024x1792", "1024x1536", "1024x1280"];
+  if (r < 0.9) return ["1024x1280", "1024x1536"];
+  if (r > 1.15) return ["1280x1024", "1024x1024"];
+  return ["1024x1024"];
 }
 
 function providerError(status, body) {
@@ -160,7 +182,7 @@ function providerError(status, body) {
   return new HttpError(503, "Генерації тимчасово недоступні. Спробуйте пізніше.", "unavailable");
 }
 
-async function generateWithOpenAI({ recipe, images, promptTemplate }, key) {
+async function generateWithOpenAI({ recipe, images, promptTemplate, template }, key) {
   const model = process.env.IMAGE_MODEL || "gpt-image-2.6-sunburst";
   const quality = process.env.IMAGE_QUALITY || "medium";
   if (!promptTemplate) {
@@ -180,50 +202,84 @@ async function generateWithOpenAI({ recipe, images, promptTemplate }, key) {
       return null;
     }
   };
+  // Режим «за фото-шаблоном»: Image 1 = справжнє фото зі «Стилю», далі фото квіток. Упаковку, фон і руки модель бере
+  // з самого шаблона, тому фото форми й колаж стилю не потрібні.
+  let templateBuf = null;
+  if (template) {
+    try {
+      templateBuf = await downscale(await fetchPhoto(template.url), TEMPLATE_SIDE);
+    } catch (e) {
+      // промпт уже «редагувальний», тож без шаблона малювати з нуля не можна: нехай клієнт спробує ще раз
+      console.error("Фото-шаблон не завантажено:", e.message);
+      throw new HttpError(503, "Генерації тимчасово недоступні. Спробуйте пізніше.", "unavailable");
+    }
+  }
+  const editMode = Boolean(templateBuf);
+
   const [flowerBufs, containerBufs, collage] = await Promise.all([
     Promise.all(images.flowers.map((f) => (f.url ? prepare(f.url) : null))),
-    Promise.all(images.container.map((c) => prepare(c.url))),
-    images.styles.length ? styleCollage(images.styles) : null,
+    editMode ? [] : Promise.all(images.container.map((c) => prepare(c.url))),
+    !editMode && images.styles.length ? styleCollage(images.styles) : null,
   ]);
 
   const parts = []; // { buf, line }
+  if (editMode) parts.push({ buf: templateBuf, line: "real studio photograph to edit (keep everything except the flowers)" });
   images.flowers.forEach((f, i) => {
     if (flowerBufs[i]) parts.push({ buf: flowerBufs[i], line: `stock photo of "${f.name}" (${f.count} stems)` });
   });
-  images.container.forEach((c, i) => {
-    if (containerBufs[i]) parts.push({ buf: containerBufs[i], line: `packaging reference: ${OPTION_EN[c.group] || c.group} "${c.label}"` });
-  });
-  if (collage) parts.push({ buf: collage, line: "collage of finished studio arrangements (style reference only)" });
+  if (!editMode) {
+    images.container.forEach((c, i) => {
+      if (containerBufs[i]) parts.push({ buf: containerBufs[i], line: `packaging reference: ${OPTION_EN[c.group] || c.group} "${c.label}"` });
+    });
+    if (collage) parts.push({ buf: collage, line: "collage of finished studio arrangements (style reference only)" });
+  }
   if (parts.length === 0 || parts.length > MAX_INPUT_IMAGES) {
     throw new HttpError(503, "Генерації тимчасово недоступні. Спробуйте пізніше.", "unavailable");
   }
 
   const prompt = buildPrompt(promptTemplate, recipe, parts.map((p, i) => `Image ${i + 1}: ${p.line}`));
 
-  const form = new FormData();
-  form.append("model", model);
-  form.append("prompt", prompt);
-  form.append("size", "1024x1024");
-  form.append("quality", quality);
-  form.append("n", "1");
-  form.append("output_format", "jpeg");
-  form.append("output_compression", "90");
-  if (process.env.IMAGE_COMPLEXITY) form.append("complexity", process.env.IMAGE_COMPLEXITY);
-  parts.forEach((p, i) => form.append("image[]", new Blob([p.buf], { type: "image/jpeg" }), `ref${i + 1}.jpg`));
+  // розмір виходу: у режимі шаблона підлаштовуємо під його пропорції
+  let sizes = ["1024x1024"];
+  if (editMode) {
+    const im = await loadImage(templateBuf);
+    sizes = outputSizes(im.width, im.height);
+  }
 
   let res;
-  try {
-    res = await fetch(OPENAI_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}` },
-      body: form,
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
-  } catch (e) {
-    console.error("OpenAI недоступний:", e.name, e.message);
-    throw new HttpError(503, "Генерації тимчасово недоступні. Спробуйте пізніше.", "unavailable");
+  let body;
+  for (let i = 0; i < sizes.length; i++) {
+    const form = new FormData();
+    form.append("model", model);
+    form.append("prompt", prompt);
+    form.append("size", sizes[i]);
+    form.append("quality", quality);
+    form.append("n", "1");
+    form.append("output_format", "jpeg");
+    form.append("output_compression", "90");
+    if (process.env.IMAGE_COMPLEXITY) form.append("complexity", process.env.IMAGE_COMPLEXITY);
+    parts.forEach((p, k) => form.append("image[]", new Blob([p.buf], { type: "image/jpeg" }), `ref${k + 1}.jpg`));
+
+    try {
+      res = await fetch(OPENAI_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}` },
+        body: form,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch (e) {
+      console.error("OpenAI недоступний:", e.name, e.message);
+      throw new HttpError(503, "Генерації тимчасово недоступні. Спробуйте пізніше.", "unavailable");
+    }
+    body = await res.json().catch(() => null);
+    // модель не прийняла цей розмір: пробуємо наступний із запасних
+    const sizeRejected = res.status === 400 && (body?.error?.param === "size" || /size/i.test(body?.error?.message || ""));
+    if (!res.ok && sizeRejected && i < sizes.length - 1) {
+      console.warn(`Розмір ${sizes[i]} не прийнято, пробуємо ${sizes[i + 1]}`);
+      continue;
+    }
+    break;
   }
-  const body = await res.json().catch(() => null);
   if (!res.ok) throw providerError(res.status, body);
   const b64 = body?.data?.[0]?.b64_json;
   if (!b64) {
@@ -237,9 +293,9 @@ async function generateWithOpenAI({ recipe, images, promptTemplate }, key) {
     usage && /^gpt-image-2/.test(model)
       ? ((d.image_tokens || 0) * PRICES.imageIn + (d.text_tokens || 0) * PRICES.textIn + (usage.output_tokens || 0) * PRICES.imageOut) / 1e6
       : null;
-  console.log(`[generate] ${model}:${quality} вхід: фото ${d.image_tokens ?? "?"} + текст ${d.text_tokens ?? "?"}, вихід ${usage?.output_tokens ?? "?"}, ≈ $${cost == null ? "?" : cost.toFixed(4)}`);
+  console.log(`[generate] ${model}:${quality}${editMode ? ":edit" : ""} вхід: фото ${d.image_tokens ?? "?"} + текст ${d.text_tokens ?? "?"}, вихід ${usage?.output_tokens ?? "?"}, ≈ $${cost == null ? "?" : cost.toFixed(4)}`);
 
-  return { image: Buffer.from(b64, "base64"), model: `${model}:${quality}`, usage, cost };
+  return { image: Buffer.from(b64, "base64"), model: `${model}:${quality}${editMode ? ":edit" : ""}`, usage, cost };
 }
 
 // Єдина точка входу. input: { recipe, summary, variantNo, images, promptTemplate }.

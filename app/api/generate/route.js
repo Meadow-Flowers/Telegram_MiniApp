@@ -1,8 +1,8 @@
 import { api, readJson } from "../../lib/server/http";
 import { HttpError } from "../../lib/server/errors";
 import { db, check, photoUrl, PHOTOS_BUCKET } from "../../lib/server/supabase";
-import { loadCatalog, loadPromptTemplate } from "../../lib/server/catalog";
-import { buildRecipe, recipeImages } from "../../lib/server/recipe";
+import { loadCatalog, loadEditPromptTemplate, loadPromptTemplate } from "../../lib/server/catalog";
+import { buildRecipe, pickTemplate, recipeImages } from "../../lib/server/recipe";
 import { generateBouquetImage, withCaption } from "../../lib/server/imageGen";
 import { logEvent } from "../../lib/server/events";
 
@@ -26,12 +26,21 @@ export const POST = api(async ({ request, session }) => {
     throw new HttpError(429, "На сьогодні генерації закінчились", "limit");
   }
 
+  // Основний шлях: редагуємо фото-шаблон зі вкладки «Стиль» (потрібні й підходяще фото, і шаблон промпту редагування).
+  // Запасний шлях: малюємо з нуля, як у першій версії MVP.
+  const hasKey = Boolean(process.env.OPENAI_API_KEY) && process.env.IMAGE_STUB !== "1"; // без ключа або в режимі заглушки модель не викликається
+  const template = hasKey ? pickTemplate(catalog, recipe) : null;
+  const editPrompt = template ? await loadEditPromptTemplate() : null;
+  const editMode = Boolean(template && editPrompt);
+  if (editMode) recipe.templateId = template.id; // запам'ятовуємо, з якого фото зроблено (лише для аналізу)
+
   const { image, model, usage, cost } = await generateBouquetImage({
     recipe,
     summary: recipe.summary,
     variantNo: Number(input.variantNo) || undefined,
     images: recipeImages(catalog, recipe),
-    promptTemplate: process.env.OPENAI_API_KEY ? await loadPromptTemplate() : null,
+    template: editMode ? template : null,
+    promptTemplate: editMode ? editPrompt : hasKey ? await loadPromptTemplate() : null,
   });
   const finalImage = await withCaption(image, recipe.summary);
 

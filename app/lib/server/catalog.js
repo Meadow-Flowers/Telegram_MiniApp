@@ -85,6 +85,17 @@ export async function loadCatalog() {
   };
 }
 
+// Шаблон промпту для редагування фото-шаблона (settings.image_prompt_edit, міграція 0009). Читаємо через "*":
+// до виконання міграції стовпця немає, і це не помилка, а просто «шаблона промпту ще нема».
+export async function loadEditPromptTemplate() {
+  const { data, error } = await db().from("settings").select("*").eq("id", 1).single();
+  if (error) {
+    console.error("Промпт редагування не прочитано:", error.message);
+    return null;
+  }
+  return data.image_prompt_edit?.trim() || null;
+}
+
 // Шаблон промпту для моделі зображень. Лежить у базі (settings.image_prompt), а не в коді: репозиторій публічний.
 // Не входить у loadCatalog, тож у браузер не потрапляє. Якщо міграцію 0004 ще не виконано, повертає null.
 export async function loadPromptTemplate() {
